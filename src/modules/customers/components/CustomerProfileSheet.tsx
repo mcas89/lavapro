@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Phone, MapPin, CarFront, CalendarClock, DollarSign, Plus } from "lucide-react";
 import { useCollection } from "@/hooks/useCollection";
-import { useEffect, useState } from "react";
-import { db } from "@/lib/db";
 
 export function CustomerProfileSheet() {
   const [searchParams, setSearchParams] = useSearchParams();

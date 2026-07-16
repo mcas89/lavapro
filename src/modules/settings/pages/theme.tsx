@@ -9,7 +9,7 @@ import { useCollection } from "@/hooks/useCollection";
 
 export default function ThemePage() {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [theme, setTheme] = useState("blue");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);

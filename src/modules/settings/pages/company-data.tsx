@@ -10,7 +10,7 @@ import { useCollection } from "@/hooks/useCollection";
 
 export default function CompanyDataPage() {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const { data: settingsList, loading: settingsLoading } = useCollection<any>("settings");
   
   const [formData, setFormData] = useState({

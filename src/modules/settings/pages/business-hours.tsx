@@ -1,4 +1,4 @@
-import { useState, useMemo, memo, useCallback, useEffect } from "react";
+import { useState, memo, useCallback, useEffect } from "react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -128,7 +128,7 @@ export default function BusinessHoursPage() {
               <span className="text-sm font-medium">Intervalo da Agenda</span>
               <Select 
                 value={hours.intervalMinutes.toString()} 
-                onValueChange={(val) => setHours(prev => ({...prev, intervalMinutes: parseInt(val)}))}
+                onValueChange={(val) => setHours((prev: any) => ({...prev, intervalMinutes: parseInt(val)}))}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />

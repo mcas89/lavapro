@@ -3,7 +3,6 @@ import { RouterProvider } from "react-router";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { router } from "@/routes";
 import { Toaster } from "@/components/ui/toaster";
-import { db } from "@/lib/db";
 import { SplashScreen } from "@/components/shared/SplashScreen";
 
 export default function App() {

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Home, Calendar, Users, DollarSign, Menu, CarFront } from "lucide-react";
+import { Home, Calendar, DollarSign, Menu, CarFront } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNavigation() {

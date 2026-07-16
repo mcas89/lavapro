@@ -51,7 +51,7 @@ export function NewCustomerSheet() {
       // Redireciona imediatamente para o cadastro de veículo deste cliente
       searchParams.delete("newCustomer");
       searchParams.set("newVehicle", "true");
-      searchParams.set("targetCustomer", doc.id);
+      if (doc?.id) searchParams.set("targetCustomer", doc.id);
       setSearchParams(searchParams, { replace: true });
     } catch (e) {
       toast({ title: "Erro", description: "Não foi possível salvar o cliente.", variant: "destructive" });
