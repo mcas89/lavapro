@@ -1,0 +1,118 @@
+import { useSearchParams, useNavigate } from "react-router";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Store, LogOut, Info, Home, CarFront, Calendar, DollarSign, Users } from "lucide-react";
+
+export function SettingsDrawer() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const isOpen = searchParams.get("settingsMenu") === "true";
+
+  const handleClose = () => {
+    searchParams.delete("settingsMenu");
+    setSearchParams(searchParams, { replace: true });
+  };
+
+  const handleNavigate = (path: string) => {
+    handleClose();
+    navigate(path);
+  };
+
+  const links = [
+    { to: "/app/dashboard", icon: Home, label: "Início" },
+    { to: "/app/pista", icon: CarFront, label: "Pista" },
+    { to: "/app/agenda", icon: Calendar, label: "Agenda" },
+    { to: "/app/financeiro", icon: DollarSign, label: "Financeiro" },
+    { to: "/app/clientes", icon: Users, label: "Clientes" },
+  ];
+
+  return (
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent side="right" className="w-[300px] sm:w-[400px] flex flex-col">
+        <SheetHeader className="text-left">
+          <SheetTitle>Menu Principal</SheetTitle>
+          <SheetDescription>
+            Acesse as funções, configurações e atalhos.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex-1 py-4 overflow-y-auto space-y-6">
+          <button
+            onClick={() => handleNavigate("/app/configuracoes")}
+            className="w-full flex items-center gap-3 px-4 py-4 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-left shadow-sm"
+          >
+            <Store className="h-6 w-6" />
+            Meu Lava-Rápido
+          </button>
+
+          <div className="space-y-1">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">Navegação Rápida</h3>
+            {links.map((link) => {
+              const Icon = link.icon;
+              return (
+                <button
+                  key={link.to}
+                  onClick={() => handleNavigate(link.to)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+                >
+                  <Icon className="h-4 w-4" />
+                  {link.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="pt-4 border-t space-y-1">
+          <button
+            onClick={async () => {
+              try {
+                const { signOut } = await import("firebase/auth");
+                const { firebaseAuth } = await import("@/lib/firebase");
+                await signOut(firebaseAuth);
+              } catch (e) {
+                console.error("Logout error", e);
+              }
+              localStorage.removeItem('lavapro_onboarded');
+              localStorage.removeItem('lavapro_auth');
+              localStorage.removeItem('lavapro_company');
+              handleNavigate("/login");
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors text-left"
+          >
+            <LogOut className="h-4 w-4" />
+            Sair do Sistema
+          </button>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left">
+                <Info className="h-4 w-4" />
+                Sobre
+              </button>
+            </DialogTrigger>
+            <DialogContent className="w-[90vw] max-w-[400px] rounded-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold">Detalhes do LavaPro v1.0</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4 text-sm leading-relaxed text-muted-foreground">
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-foreground">Criação do projeto</span>
+                  <span>Supertech Soluções em Tecnologia</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-foreground">Desenvolvedor Principal</span>
+                  <span>Marcos Silva</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-foreground">Ideias</span>
+                  <span>Felipe Ramos</span>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
