@@ -44,42 +44,6 @@
     --radius: 0.5rem;
   }
 
-  .theme-blue {
-    --primary: 221.2 83.2% 53.3%;
-    --ring: 221.2 83.2% 53.3%;
-  }
-
-  .theme-red {
-    --primary: 0 84.2% 60.2%;
-    --ring: 0 84.2% 60.2%;
-  }
-
-  .theme-green {
-    --primary: 160 84% 39%;
-    --ring: 160 84% 39%;
-  }
-
-  .theme-purple {
-    --primary: 271 91% 65%;
-    --ring: 271 91% 65%;
-  }
-
-  .theme-orange {
-    --primary: 24.6 95% 53.1%;
-    --ring: 24.6 95% 53.1%;
-  }
-
-  .theme-zinc {
-    --primary: 240 5.9% 10%;
-    --ring: 240 5.9% 10%;
-  }
-
-  .dark.theme-zinc {
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --ring: 0 0% 98%;
-  }
-
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -106,24 +70,6 @@
     --input: 217.2 32.6% 17.5%;
   }
 
-  .theme-red {
-    --primary: 0 84.2% 60.2%;
-  }
-  .theme-green {
-    --primary: 142.1 76.2% 36.3%;
-  }
-  .theme-purple {
-    --primary: 270 70% 50%;
-  }
-  .theme-orange {
-    --primary: 24 90% 50%;
-  }
-  .theme-zinc {
-    --primary: 240 5.9% 10%;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
@@ -131,5 +77,53 @@
     @apply bg-background text-foreground;
   }
 }
-.hide-scrollbar::-webkit-scrollbar { display: none; }  
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } 
+
+/* ═══════════════════════════════════════════════════════════
+   TEMAS DE COR — Fora do @layer para ter MAIOR especificidade
+   que as variáveis do :root e .dark dentro do @layer base.
+   ═══════════════════════════════════════════════════════════ */
+
+.theme-blue {
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --ring: 221.2 83.2% 53.3%;
+}
+
+.theme-red {
+  --primary: 0 72% 51%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 0 72% 51%;
+}
+
+.theme-green {
+  --primary: 160 84% 39%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 160 84% 39%;
+}
+
+.theme-purple {
+  --primary: 271 76% 53%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 271 76% 53%;
+}
+
+.theme-orange {
+  --primary: 24.6 95% 53.1%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 24.6 95% 53.1%;
+}
+
+.theme-zinc {
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --ring: 240 5.9% 10%;
+}
+
+.dark.theme-zinc {
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --ring: 0 0% 98%;
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

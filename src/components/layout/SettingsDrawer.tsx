@@ -73,9 +73,7 @@ export function SettingsDrawer() {
               } catch (e) {
                 console.error("Logout error", e);
               }
-              localStorage.removeItem('lavapro_onboarded');
               localStorage.removeItem('lavapro_auth');
-              localStorage.removeItem('lavapro_company');
               handleNavigate("/login");
             }}
             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors text-left"
