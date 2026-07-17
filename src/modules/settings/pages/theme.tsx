@@ -47,8 +47,8 @@ export default function ThemePage() {
         const ctx = canvas.getContext("2d");
         if (!ctx) { reject(new Error("Canvas error")); return; }
         ctx.drawImage(img, 0, 0, width, height);
-        URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL("image/jpeg", 0.8));
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        resolve(canvas.toDataURL("image/webp", 0.8));
       };
       img.onerror = reject;
       img.src = url;

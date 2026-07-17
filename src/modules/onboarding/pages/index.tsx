@@ -38,11 +38,41 @@ export default function OnboardingPage() {
     { id: "zinc", name: "Cinza", color: "bg-zinc-900" },
   ];
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 300;
+        let { width, height } = img;
+        if (width > height) {
+          if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; }
+        } else {
+          if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("Canvas error")); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        resolve(canvas.toDataURL("image/webp", 0.8));
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setLogoPreview(url);
+      try {
+        const compressed = await compressImage(file);
+        setLogoPreview(compressed);
+      } catch (err) {
+        console.error("Error compressing image", err);
+      }
     }
   };
 
