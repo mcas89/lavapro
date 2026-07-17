@@ -44,6 +44,42 @@
     --radius: 0.5rem;
   }
 
+  .theme-blue {
+    --primary: 221.2 83.2% 53.3%;
+    --ring: 221.2 83.2% 53.3%;
+  }
+
+  .theme-red {
+    --primary: 0 84.2% 60.2%;
+    --ring: 0 84.2% 60.2%;
+  }
+
+  .theme-green {
+    --primary: 160 84% 39%;
+    --ring: 160 84% 39%;
+  }
+
+  .theme-purple {
+    --primary: 271 91% 65%;
+    --ring: 271 91% 65%;
+  }
+
+  .theme-orange {
+    --primary: 24.6 95% 53.1%;
+    --ring: 24.6 95% 53.1%;
+  }
+
+  .theme-zinc {
+    --primary: 240 5.9% 10%;
+    --ring: 240 5.9% 10%;
+  }
+
+  .dark.theme-zinc {
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --ring: 0 0% 98%;
+  }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -53,9 +89,6 @@
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -71,7 +104,6 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
   }
 
   .theme-red {
