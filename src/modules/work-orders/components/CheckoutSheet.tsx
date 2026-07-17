@@ -73,6 +73,11 @@ export function CheckoutSheet({ vehicleId, onClose }: CheckoutSheetProps) {
     // 2. Remover da pista
     db.deleteDoc("workOrders", workOrder.id);
 
+    // 3. Atualizar status na agenda para concluído (se houver agendamento)
+    if (workOrder.scheduleId) {
+      db.updateDoc("schedules", workOrder.scheduleId, { status: "completed" });
+    }
+
     toast({
       title: "Pagamento Concluído! ✅",
       description: `R$ ${amount.toFixed(2)} registrado no caixa via ${method}.`,
