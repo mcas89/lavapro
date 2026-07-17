@@ -12,6 +12,7 @@ import { NewServiceSheet } from "@/modules/services/components/NewServiceSheet";
 import { NewTeamMemberSheet } from "@/modules/settings/components/NewTeamMemberSheet";
 import { NewTransactionSheet } from "@/modules/finance/components/NewTransactionSheet";
 import { useEffect, useState } from "react";
+import { useCollection } from "@/hooks/useCollection";
 
 export function DashboardLayout() {
   const [companyName, setCompanyName] = useState("LavaPro");
@@ -26,9 +27,28 @@ export function DashboardLayout() {
     }
   }, []);
 
-  const isOnboarded = localStorage.getItem("lavapro_onboarded") === "true";
+  const { data: settings, loading } = useCollection<any>("settings");
   
-  if (!isOnboarded) {
+  const isOnboardedLocal = localStorage.getItem("lavapro_onboarded") === "true";
+  const profileDoc = settings?.find((s: any) => s.id === "profile");
+  
+  // Se encontrou o profile no banco, significa que já fez onboarding (útil para login em novo dispositivo)
+  if (profileDoc && !isOnboardedLocal) {
+    localStorage.setItem("lavapro_onboarded", "true");
+  }
+
+  const isReallyOnboarded = isOnboardedLocal || !!profileDoc;
+
+  // Se não está marcado como onboarded localmente, esperamos carregar o banco para ter certeza
+  if (!isOnboardedLocal && loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/20">
+        <div className="animate-pulse text-muted-foreground font-medium">Sincronizando seus dados...</div>
+      </div>
+    );
+  }
+  
+  if (!isReallyOnboarded) {
     return <Navigate to="/onboarding" replace />;
   }
 

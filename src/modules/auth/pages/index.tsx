@@ -30,7 +30,8 @@ export default function LoginPage() {
       if (isOnboarded) {
         navigate("/app/dashboard");
       } else {
-        navigate("/onboarding");
+        // Agora o DashboardLayout faz a verificação no banco de dados
+        navigate("/app/dashboard");
       }
     } catch (error: any) {
       console.error(error);
