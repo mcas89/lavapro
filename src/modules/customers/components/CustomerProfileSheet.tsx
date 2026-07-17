@@ -12,9 +12,19 @@ export function CustomerProfileSheet() {
 
   const { data: allVehicles } = useCollection<any>("vehicles");
   const { data: allCustomers } = useCollection<any>("customers");
+  const { data: allTransactions } = useCollection<any>("transactions");
+  const { data: allSchedules } = useCollection<any>("schedules");
   
   const customer = allCustomers.find(c => c.id === customerId);
   const vehicles = allVehicles.filter(v => v.customerId === customerId);
+
+  // Cálculo Dinâmico
+  const customerTransactions = allTransactions.filter(t => t.customerId === customerId && t.type === 'income');
+  const totalSpent = customerTransactions.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+
+  const customerSchedules = allSchedules.filter(s => s.customerId === customerId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const lastVisitRaw = customerSchedules.length > 0 ? customerSchedules[0].date : null;
+  const lastVisit = lastVisitRaw ? lastVisitRaw.split("-").reverse().join("/") : "-";
 
   const handleClose = () => {
     searchParams.delete("customerProfile");
@@ -61,14 +71,14 @@ export function CustomerProfileSheet() {
             <CardContent className="p-4 flex flex-col items-center text-center">
               <CalendarClock className="h-6 w-6 text-primary mb-2" />
               <p className="text-xs text-muted-foreground">Última Visita</p>
-              <p className="font-bold text-sm mt-1">{customer.lastVisit || "-"}</p>
+              <p className="font-bold text-sm mt-1">{lastVisit}</p>
             </CardContent>
           </Card>
           <Card className="bg-muted/30">
             <CardContent className="p-4 flex flex-col items-center text-center">
               <DollarSign className="h-6 w-6 text-green-600 mb-2" />
               <p className="text-xs text-muted-foreground">Total Gasto</p>
-              <p className="font-bold text-sm mt-1">R$ {(customer.totalSpent || 0).toFixed(2)}</p>
+              <p className="font-bold text-sm mt-1">R$ {totalSpent.toFixed(2)}</p>
             </CardContent>
           </Card>
         </div>
