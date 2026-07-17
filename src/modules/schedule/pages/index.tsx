@@ -77,6 +77,7 @@ export default function SchedulesPage() {
   const { data: schedules } = useCollection<any>("schedules");
   const { data: customers } = useCollection<any>("customers");
   const { data: vehicles } = useCollection<any>("vehicles");
+  const { data: services } = useCollection<any>("services");
   
   const businessDays = useMemo(() => generateBusinessDays(businessHours), [businessHours]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -130,6 +131,19 @@ export default function SchedulesPage() {
   }, [selectedDayConfig, businessHours]);
 
   const daySchedules = schedules.filter((s: any) => s.date === selectedDate);
+
+  const daySchedulesWithDuration = useMemo(() => {
+    return daySchedules.map((s: any) => {
+      const service = services.find((srv: any) => srv.id === s.serviceId);
+      const duration = service?.estimatedTime || 30;
+      
+      const [h, m] = s.hour.split(":").map(Number);
+      const startMin = h * 60 + m;
+      const endMin = startMin + duration;
+      
+      return { ...s, startMin, endMin };
+    });
+  }, [daySchedules, services]);
 
   // Lógica do Calendário Mensal
   const daysInMonth = getDaysInMonth(calendarYear, calendarMonth);
@@ -207,7 +221,11 @@ export default function SchedulesPage() {
           <p className="text-center text-muted-foreground mt-8">Nenhum dia selecionado.</p>
         ) : (
           timeSlots.map(time => {
-            const scheduleInSlot = daySchedules.find((s: any) => s.hour === time);
+            const [h, m] = time.split(":").map(Number);
+            const slotMin = h * 60 + m;
+
+            const scheduleStartingHere = daySchedulesWithDuration.find((s: any) => s.startMin === slotMin);
+            const scheduleCoveringHere = daySchedulesWithDuration.find((s: any) => s.startMin < slotMin && s.endMin > slotMin);
 
             return (
               <div key={time} id={`slot-${time}`} className="flex gap-4">
@@ -215,21 +233,27 @@ export default function SchedulesPage() {
                   <span className="text-xs font-medium text-muted-foreground">{time}</span>
                 </div>
                 <div className="flex-1">
-                  {scheduleInSlot ? (
+                  {scheduleStartingHere ? (
                     (() => {
+                      const scheduleInSlot = scheduleStartingHere;
                       const customer = customers.find((c: any) => c.id === scheduleInSlot.customerId);
                       const vehicle = vehicles.find((v: any) => v.id === scheduleInSlot.vehicleId);
+                      const service = services.find((srv: any) => srv.id === scheduleInSlot.serviceId);
                       return (
                         <div onClick={() => openEditSchedule(scheduleInSlot.id)} className="cursor-pointer">
                           <AppointmentCard 
                             schedule={scheduleInSlot}
                             customerName={customer?.name || "Cliente Não Encontrado"}
                             vehicleInfo={vehicle ? `${vehicle.brand} ${vehicle.model} • ${vehicle.plate}` : "Veículo Desconhecido"}
-                            serviceName="Lavagem" 
+                            serviceName={service?.name || "Lavagem"} 
                           />
                         </div>
                       );
                     })()
+                  ) : scheduleCoveringHere ? (
+                    <div className="w-full h-16 rounded-xl border-2 border-dashed border-primary/20 bg-primary/5 flex items-center justify-center text-primary/40">
+                      <span className="text-sm font-medium">Em Andamento</span>
+                    </div>
                   ) : (
                     <button 
                       onClick={() => openNewSchedule(time)}

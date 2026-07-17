@@ -22,20 +22,24 @@ export default function FinancePage() {
   const filteredTransactions = transactions.filter((tx: any) => {
     if (filterPeriod === "all") return true;
     
-    // Anexa T00:00:00 para forçar o parse no fuso horário local e evitar bug de dia anterior
-    const txDate = new Date(tx.date + "T00:00:00");
+    if (!tx.date) return false;
+    
+    // Parse manual para evitar bug de UTC e fuso horário
+    const [y, m, d] = tx.date.split("-").map(Number);
+    const txDate = new Date(y, m - 1, d);
+    txDate.setHours(0, 0, 0, 0);
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     if (filterPeriod === "today") {
-      return txDate.getTime() >= today.getTime();
+      return txDate.getTime() === today.getTime();
     }
     
     if (filterPeriod === "7days") {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setHours(0, 0, 0, 0);
+      const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(today.getDate() - 7);
-      return txDate.getTime() >= sevenDaysAgo.getTime();
+      return txDate.getTime() >= sevenDaysAgo.getTime() && txDate.getTime() <= today.getTime();
     }
     
     if (filterPeriod === "month") {
