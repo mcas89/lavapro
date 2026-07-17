@@ -31,7 +31,7 @@ export function NewWorkOrderSheet({ isOpen, onClose }: NewWorkOrderSheetProps) {
 
     db.addDoc("workOrders", {
       ...formData,
-      status: "queue",
+      status: "washing",
       elapsedTime: "0 min",
     });
 

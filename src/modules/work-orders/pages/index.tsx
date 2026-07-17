@@ -11,7 +11,6 @@ import { CheckoutSheet } from "../components/CheckoutSheet";
 import { NewWorkOrderSheet } from "../components/NewWorkOrderSheet";
 
 const STATUSES = [
-  { id: "queue", label: "Fila", icon: CarFront },
   { id: "washing", label: "Lavando", icon: Droplets },
   { id: "drying", label: "Secando", icon: Wind },
   { id: "ready", label: "Pronto", icon: Check }
@@ -22,8 +21,8 @@ export default function WorkOrdersPage() {
   const { data: vehicles } = useCollection<any>("vehicles");
   const { data: customers } = useCollection<any>("customers");
   const [searchParams] = useSearchParams();
-  // Abre direto na aba que vier via ?tab=, senão começa na Fila
-  const initialTab = searchParams.get("tab") || "queue";
+  // Abre direto na aba que vier via ?tab=, senão começa na Lavando
+  const initialTab = searchParams.get("tab") || "washing";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [checkoutVehicleId, setCheckoutVehicleId] = useState<string | null>(null);
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
@@ -31,9 +30,7 @@ export default function WorkOrdersPage() {
   const filteredOrders = workOrders.filter((wo: any) => wo.status === activeTab);
 
   const advanceStatus = (id: string, currentStatus: string) => {
-    const nextStatus = currentStatus === "queue" ? "washing"
-                     : currentStatus === "washing" ? "drying"
-                     : "ready";
+    const nextStatus = currentStatus === "washing" ? "drying" : "ready";
     db.updateDoc("workOrders", id, { status: nextStatus });
     setActiveTab(nextStatus);
   };
