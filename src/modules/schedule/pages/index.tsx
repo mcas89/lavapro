@@ -227,6 +227,9 @@ export default function SchedulesPage() {
             const scheduleStartingHere = daySchedulesWithDuration.find((s: any) => s.startMin === slotMin);
             const scheduleCoveringHere = daySchedulesWithDuration.find((s: any) => s.startMin < slotMin && s.endMin > slotMin);
 
+            // Oculta os slots que estão no meio do andamento de um serviço maior
+            if (scheduleCoveringHere) return null;
+
             return (
               <div key={time} id={`slot-${time}`} className="flex gap-4">
                 <div className="w-12 pt-2 text-right">
@@ -250,16 +253,12 @@ export default function SchedulesPage() {
                         </div>
                       );
                     })()
-                  ) : scheduleCoveringHere ? (
-                    <div className="w-full h-16 rounded-xl border-2 border-dashed border-primary/20 bg-primary/5 flex items-center justify-center text-primary/40">
-                      <span className="text-sm font-medium">Em Andamento</span>
-                    </div>
                   ) : (
                     <button 
                       onClick={() => openNewSchedule(time)}
                       className="w-full h-16 rounded-xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 ring-primary ring-offset-2"
                     >
-                      <span className="text-sm font-medium">Slot Livre</span>
+                      <span className="text-sm font-medium">Horário Livre</span>
                     </button>
                   )}
                 </div>
