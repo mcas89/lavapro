@@ -13,7 +13,15 @@ export function useCollection<T extends DocumentData>(collectionName: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubscribeSnapshot: (() => void) | undefined;
+
     const unsubscribeAuth = onAuthStateChanged(firebaseAuth, (user) => {
+      // Limpa qualquer listener ativo da sessão anterior
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = undefined;
+      }
+
       if (!user) {
         setData([]);
         setLoading(false);
@@ -23,7 +31,7 @@ export function useCollection<T extends DocumentData>(collectionName: string) {
       setLoading(true);
       const q = query(collection(firestore, `tenants/${user.uid}/${collectionName}`));
 
-      const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+      unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
         const documents = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
@@ -34,11 +42,14 @@ export function useCollection<T extends DocumentData>(collectionName: string) {
         console.error("Erro ao buscar coleção em tempo real:", collectionName, error);
         setLoading(false);
       });
-
-      return () => unsubscribeSnapshot();
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
+      unsubscribeAuth();
+    };
   }, [collectionName]);
 
   return { data, loading };
