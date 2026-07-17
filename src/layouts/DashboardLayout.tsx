@@ -16,6 +16,7 @@ import { useCollection } from "@/hooks/useCollection";
 
 export function DashboardLayout() {
   const [companyName, setCompanyName] = useState("LavaPro");
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   
   useEffect(() => {
     const savedCompany = localStorage.getItem("lavapro_company");
@@ -36,6 +37,18 @@ export function DashboardLayout() {
   if (profileDoc && !isOnboardedLocal) {
     localStorage.setItem("lavapro_onboarded", "true");
   }
+
+  // Atualiza logo e tema a partir do banco
+  useEffect(() => {
+    if (profileDoc) {
+      if (profileDoc.logo) setCompanyLogo(profileDoc.logo);
+      if (profileDoc.company?.name) setCompanyName(profileDoc.company.name);
+      if (profileDoc.theme) {
+        document.documentElement.className = `theme-${profileDoc.theme}`;
+        localStorage.setItem("lavapro_theme", profileDoc.theme);
+      }
+    }
+  }, [profileDoc]);
 
   const isReallyOnboarded = isOnboardedLocal || !!profileDoc;
 
@@ -65,7 +78,10 @@ export function DashboardLayout() {
     <div className="min-h-screen bg-muted/20 text-foreground flex flex-col md:flex-row pb-16 md:pb-0">
       {/* Sidebar for Desktop */}
       <aside className="hidden md:flex w-64 flex-col border-r bg-background h-screen sticky top-0 shrink-0">
-        <div className="h-14 flex items-center px-6 border-b">
+        <div className="h-14 flex items-center px-6 border-b gap-3">
+          {companyLogo ? (
+            <img src={companyLogo} alt="Logo" className="h-8 w-auto max-w-[100px] object-contain" />
+          ) : null}
           <h1 className="text-xl font-bold text-primary">{companyName}</h1>
         </div>
         <nav className="flex-1 py-4 space-y-1 overflow-y-auto px-3">

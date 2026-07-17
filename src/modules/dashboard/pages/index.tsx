@@ -200,7 +200,7 @@ export default function DashboardPage() {
         title={
           <div className="flex items-center gap-3">
             <img 
-              src={(logo && !logo.startsWith('blob:')) ? logo : "/lavapro2.png"} 
+              src={logo || "/lavapro2.png"} 
               alt="Logo" 
               className="h-8 w-auto max-w-[120px] object-contain"
               onError={(e) => { (e.target as HTMLImageElement).src = '/lavapro2.png'; }}

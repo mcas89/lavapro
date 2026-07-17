@@ -103,6 +103,7 @@ export default function ThemePage() {
       }
       
       document.documentElement.className = `theme-${theme}`;
+      localStorage.setItem("lavapro_theme", theme);
       toast({
         title: "Identidade atualizada",
         description: "Logotipo e cores do aplicativo foram salvos com sucesso.",
