@@ -48,7 +48,7 @@ export default function DashboardPage() {
         if (profileDoc.company?.ownerName) setOwnerName(profileDoc.company.ownerName);
         else if (profileDoc.company?.name) setOwnerName(profileDoc.company.name);
         
-        if (profileDoc.logo) setLogo(profileDoc.logo);
+        if (profileDoc.logo && !profileDoc.logo.startsWith('blob:')) setLogo(profileDoc.logo);
       }
     }
   }, [settingsList, settingsLoading]);

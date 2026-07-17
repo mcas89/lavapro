@@ -41,7 +41,7 @@ export function DashboardLayout() {
   // Atualiza logo e tema a partir do banco
   useEffect(() => {
     if (profileDoc) {
-      if (profileDoc.logo) setCompanyLogo(profileDoc.logo);
+      if (profileDoc.logo && !profileDoc.logo.startsWith('blob:')) setCompanyLogo(profileDoc.logo);
       if (profileDoc.company?.name) setCompanyName(profileDoc.company.name);
       if (profileDoc.theme) {
         document.documentElement.className = `theme-${profileDoc.theme}`;
