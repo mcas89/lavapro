@@ -4,9 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 
 export function AuthLayout() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    // Verifica se já está instalado (PWA standalone)
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
+      setIsInstalled(true);
+    }
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -43,17 +48,19 @@ export function AuthLayout() {
       </div>
 
       {/* Botão de Download */}
-      <div className="mt-8 text-center">
-        <button 
-          onClick={handleInstallClick}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-full shadow-lg hover:bg-primary/90 transition-all hover:scale-105"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          Baixar Aplicativo
-        </button>
-      </div>
+      {!isInstalled && (
+        <div className="mt-8 text-center animate-in fade-in zoom-in duration-500">
+          <button 
+            onClick={handleInstallClick}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-full shadow-lg hover:bg-primary/90 transition-all hover:scale-105"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Baixar Aplicativo
+          </button>
+        </div>
+      )}
     </div>
   );
 }
