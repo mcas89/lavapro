@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Store, Palette, ArrowRight, Check, Upload, Clock, Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
+import { firebaseAuth } from "@/lib/firebase";
 import { mockBusinessHours } from "@/modules/dashboard/utils/mockData";
 
 export default function OnboardingPage() {
@@ -99,7 +100,10 @@ export default function OnboardingPage() {
       
       await db.setDoc("settings", "profile", {
         theme,
-        company: formData,
+        company: {
+          ...formData,
+          email: firebaseAuth.currentUser?.email || ""
+        },
         logo: logoPreview || null,
         validUntil: expirationDate.toISOString()
       });
