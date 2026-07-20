@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/db";
 import { useState, useEffect } from "react";
+import { useCollection } from "@/hooks/useCollection";
 
 export function NewCustomerSheet() {
   const [searchParams, setSearchParams] = useSearchParams();
