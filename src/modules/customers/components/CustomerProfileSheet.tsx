@@ -2,13 +2,16 @@ import { useSearchParams } from "react-router";
 import { BottomSheet } from "@/components/shared/BottomSheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Phone, MapPin, CarFront, CalendarClock, DollarSign, Plus } from "lucide-react";
+import { Phone, MapPin, CarFront, CalendarClock, DollarSign, Plus, Edit, Trash2 } from "lucide-react";
 import { useCollection } from "@/hooks/useCollection";
+import { useToast } from "@/hooks/use-toast";
+import { db } from "@/lib/db";
 
 export function CustomerProfileSheet() {
   const [searchParams, setSearchParams] = useSearchParams();
   const customerId = searchParams.get("customerProfile");
   const isOpen = !!customerId;
+  const { toast } = useToast();
 
   const { data: allVehicles } = useCollection<any>("vehicles");
   const { data: allCustomers } = useCollection<any>("customers");
@@ -40,6 +43,47 @@ export function CustomerProfileSheet() {
     setSearchParams(searchParams);
   };
 
+  const openEditCustomer = () => {
+    searchParams.set("newCustomer", "true");
+    searchParams.set("editCustomer", customerId || "");
+    setSearchParams(searchParams);
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!customerId) return;
+    if (window.confirm(`Tem certeza que deseja excluir o cliente ${customer?.name}? Esta ação não pode ser desfeita e os veículos associados também podem ser perdidos.`)) {
+      try {
+        await db.deleteDoc("customers", customerId);
+        
+        // Exclui os veículos associados ao cliente
+        for (const v of vehicles) {
+          if (v.id) await db.deleteDoc("vehicles", v.id);
+        }
+
+        toast({
+          title: "Cliente excluído",
+          description: "O cliente e seus veículos foram removidos.",
+        });
+        handleClose();
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir o cliente.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const openNewVehicle = () => {
+    // Mantém o perfil aberto e adiciona newVehicle na URL para sobrepor
+    searchParams.set("newVehicle", "true");
+    if (customerId) {
+      searchParams.set("targetCustomer", customerId);
+    }
+    setSearchParams(searchParams);
+  };
+
   if (!customer && isOpen) return (
     <BottomSheet isOpen={isOpen} onClose={handleClose} title="Perfil">
       <div className="py-8 text-center text-muted-foreground">Carregando perfil...</div>
@@ -53,11 +97,19 @@ export function CustomerProfileSheet() {
       <div className="pb-6 space-y-6">
         
         {/* Info Básica */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 relative">
+          <div className="absolute top-0 right-0 flex gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={openEditCustomer}>
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" onClick={handleDeleteCustomer}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="h-20 w-20 bg-primary/10 text-primary rounded-full mx-auto flex items-center justify-center text-2xl font-bold uppercase">
             {customer.name?.charAt(0)}
           </div>
-          <h2 className="text-xl font-bold">{customer.name}</h2>
+          <h2 className="text-xl font-bold px-12">{customer.name}</h2>
           
           <div className="flex flex-col items-center gap-1 text-sm text-muted-foreground mt-2">
             <span className="flex items-center gap-1.5"><Phone className="h-4 w-4" /> {customer.phone}</span>
