@@ -6,6 +6,7 @@ import { ArrowRight, Lock, Mail, UserPlus } from "lucide-react";
 import { firebaseAuth } from "@/lib/firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
+import { db } from "@/lib/db";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -16,9 +17,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Apenas redireciona automaticamente se já existir a flag local (sessão persistida)
     const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      if (user) {
-        localStorage.setItem("lavapro_auth", "true");
+      if (user && localStorage.getItem("lavapro_onboarded") === "true") {
         navigate("/app/dashboard");
       } else {
         setLoading(false);
@@ -45,16 +46,19 @@ export default function LoginPage() {
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(firebaseAuth, email, password);
+        localStorage.setItem("lavapro_auth", "true");
+        
+        // Verifica no banco se o perfil já existe (Login em novo dispositivo)
+        const profile = await db.getDoc<any>("settings", "profile");
+        if (profile) {
+          localStorage.setItem("lavapro_onboarded", "true");
+          navigate("/app/dashboard");
+        } else {
+          navigate("/onboarding");
+        }
       } else {
         await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      }
-
-      localStorage.setItem("lavapro_auth", "true");
-      
-      const isOnboarded = localStorage.getItem("lavapro_onboarded") === "true";
-      if (isOnboarded) {
-        navigate("/app/dashboard");
-      } else {
+        localStorage.setItem("lavapro_auth", "true");
         navigate("/onboarding");
       }
     } catch (error: any) {

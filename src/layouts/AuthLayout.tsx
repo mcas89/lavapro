@@ -8,10 +8,14 @@ export function AuthLayout() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Verifica se já está instalado (PWA standalone)
-    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
+    // Verifica se já está instalado (PWA standalone) ou se já foi ocultado localmente
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    const isHiddenLocally = localStorage.getItem("lavapro_installed") === "true";
+    
+    if (isStandalone || isHiddenLocally) {
       setIsInstalled(true);
     }
+
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -29,13 +33,23 @@ export function AuthLayout() {
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") {
         setDeferredPrompt(null);
+        setIsInstalled(true);
+        localStorage.setItem("lavapro_installed", "true");
       }
     } else {
+      // Se não tem prompt (Safari iOS por exemplo), apenas marcamos como lido/escondemos.
+      setIsInstalled(true);
+      localStorage.setItem("lavapro_installed", "true");
       toast({
         title: "Instalação não disponível",
         description: "Seu navegador pode não suportar a instalação ou o app já está instalado.",
       });
     }
+  };
+
+  const hidePrompt = () => {
+    setIsInstalled(true);
+    localStorage.setItem("lavapro_installed", "true");
   };
 
   return (
@@ -49,7 +63,13 @@ export function AuthLayout() {
 
       {/* Botão de Download */}
       {!isInstalled && (
-        <div className="mt-8 text-center animate-in fade-in zoom-in duration-500">
+        <div className="mt-8 text-center animate-in fade-in zoom-in duration-500 relative inline-block">
+          <button 
+            onClick={hidePrompt}
+            className="absolute -top-3 -right-3 bg-muted text-muted-foreground hover:bg-muted/80 rounded-full w-6 h-6 flex items-center justify-center z-10 text-xs shadow-sm"
+          >
+            ✕
+          </button>
           <button 
             onClick={handleInstallClick}
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-full shadow-lg hover:bg-primary/90 transition-all hover:scale-105"
