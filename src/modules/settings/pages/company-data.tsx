@@ -2,15 +2,15 @@ import { useState, useEffect } from "react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Save, Store } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Save, Store, Crown, CalendarClock, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/db";
 import { useCollection } from "@/hooks/useCollection";
 
 export default function CompanyDataPage() {
   const { toast } = useToast();
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { data: settingsList, loading: settingsLoading } = useCollection<any>("settings");
   
   const [formData, setFormData] = useState({
@@ -20,28 +20,34 @@ export default function CompanyDataPage() {
     phone: "",
   });
 
+  const profileDoc = settingsList?.find((doc: any) => doc.id === "profile");
+  const validUntil = profileDoc?.validUntil ? new Date(profileDoc.validUntil) : null;
+  const now = new Date();
+  
+  const isLifetime = !validUntil;
+  const isExpired = validUntil ? now > validUntil : false;
+  
+  let daysDiff = 0;
+  if (validUntil) {
+    const diffTime = validUntil.getTime() - now.getTime();
+    daysDiff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
   useEffect(() => {
-    if (!settingsLoading && settingsList) {
-      const profileDoc = settingsList.find((doc: any) => doc.id === "profile");
-      if (profileDoc && profileDoc.company) {
-        setFormData({
-          name: profileDoc.company.name || "",
-          cnpj: profileDoc.company.cnpj || "",
-          address: profileDoc.company.address || "",
-          phone: profileDoc.company.phone || "",
-        });
-      }
+    if (!settingsLoading && profileDoc && profileDoc.company) {
+      setFormData({
+        name: profileDoc.company.name || "",
+        cnpj: profileDoc.company.cnpj || "",
+        address: profileDoc.company.address || "",
+        phone: profileDoc.company.phone || "",
+      });
     }
   }, [settingsList, settingsLoading]);
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Usamos setDoc com merge implícito ou leitura prévia, mas como as settings tem logo e theme,
-      // devemos atualizar apenas a chave company. O Firebase updateDoc faz partial updates se passarmos a chave.
-      // Ou mais seguro, lemos e damos update.
-      const profile = await db.getDoc<any>("settings", "profile");
-      if (profile) {
+      if (profileDoc) {
         await db.updateDoc("settings", "profile", { company: formData });
       } else {
         await db.setDoc("settings", "profile", { company: formData });
@@ -58,11 +64,64 @@ export default function CompanyDataPage() {
     }
   };
 
+  const handleRenew = () => {
+    window.open(`https://wa.me/5531983919015?text=Olá! Gostaria de renovar a assinatura do meu Lava-Rápido no LavaPro.`, '_blank');
+  };
+
   return (
     <div className="pb-24">
       <TopBar title="Dados da Empresa" showBack backTo="/app/configuracoes" />
 
       <div className="p-4 space-y-6">
+        
+        {/* Card do Plano */}
+        <Card className="border-none shadow-sm bg-gradient-to-br from-blue-600 to-indigo-700 text-white overflow-hidden relative">
+          <Crown className="absolute -right-4 -bottom-4 h-32 w-32 text-white/10" />
+          <CardHeader className="pb-2 relative z-10">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-300" /> Meu Plano
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="relative z-10 space-y-4">
+            <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+              <div className="flex items-center gap-3 mb-1">
+                {isLifetime ? (
+                  <CheckCircle2 className="h-6 w-6 text-green-300" />
+                ) : isExpired ? (
+                  <ShieldAlert className="h-6 w-6 text-red-300" />
+                ) : (
+                  <CalendarClock className="h-6 w-6 text-blue-200" />
+                )}
+                <h3 className="font-bold text-lg">
+                  {isLifetime ? "Vitalício (Pioneiro)" : isExpired ? "Plano Vencido" : "Plano Ativo"}
+                </h3>
+              </div>
+              
+              {!isLifetime && (
+                <div className="mt-2 text-sm text-blue-100 flex justify-between items-center">
+                  <span>
+                    {isExpired 
+                      ? "Seu acesso expirou." 
+                      : `Faltam ${daysDiff} dia${daysDiff === 1 ? '' : 's'}`}
+                  </span>
+                  <span className="font-semibold bg-white/20 px-2 py-1 rounded">
+                    Vence: {validUntil?.toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <Button 
+              variant="secondary" 
+              className="w-full font-bold text-blue-700 hover:text-blue-800 bg-white hover:bg-blue-50"
+              onClick={handleRenew}
+            >
+              Renovar Assinatura
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Card de Dados da Empresa */}
         <Card className="border-none shadow-sm bg-card">
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center gap-3 mb-6">
@@ -119,10 +178,10 @@ export default function CompanyDataPage() {
 
         <Button 
           className="w-full h-14 text-lg font-bold rounded-xl"
-          disabled={!formData.name}
+          disabled={!formData.name || loading}
           onClick={handleSave}
         >
-          <Save className="mr-2 h-5 w-5" /> Salvar Alterações
+          {loading ? "Salvando..." : <><Save className="mr-2 h-5 w-5" /> Salvar Alterações</>}
         </Button>
       </div>
     </div>
