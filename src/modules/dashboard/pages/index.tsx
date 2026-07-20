@@ -122,8 +122,24 @@ export default function DashboardPage() {
       }
     }
 
+    // 3. Assinatura Vencendo (<= 3 dias)
+    const profileDoc = settingsList?.find((doc: any) => doc.id === "profile");
+    if (profileDoc && profileDoc.validUntil) {
+      const validUntil = new Date(profileDoc.validUntil);
+      const diffTime = validUntil.getTime() - now.getTime();
+      const daysDiff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff >= 0 && daysDiff <= 3) {
+        newNotifications.push({
+          id: 'n3',
+          title: 'Assinatura Vencendo',
+          message: `Atenção: Seu plano expira em ${daysDiff} dia${daysDiff === 1 ? '' : 's'}. Acesse Configurações > Dados da Empresa para renovar.`,
+        });
+      }
+    }
+
     setNotifications(newNotifications);
-  }, [transactions, schedules, vehicles]);
+  }, [transactions, schedules, vehicles, settingsList]);
 
   const openNewSchedule = () => {
     searchParams.set("newSchedule", "true");
