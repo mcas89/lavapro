@@ -1,7 +1,9 @@
 import { Outlet, Navigate } from "react-router";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { NavLink } from "react-router";
-import { Home, Calendar, Users, DollarSign, Menu as MenuIcon, CarFront } from "lucide-react";
+import { Home, Calendar, Users, DollarSign, Menu as MenuIcon, CarFront, Lock, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { firebaseAuth } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
 import { NewScheduleSheet } from "@/modules/schedule/components/NewScheduleSheet";
 import { SettingsDrawer } from "@/components/layout/SettingsDrawer";
@@ -63,6 +65,52 @@ export function DashboardLayout() {
   
   if (!isReallyOnboarded) {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  // Verificação do Plano (Bloqueio SaaS)
+  const isExpired = profileDoc?.validUntil && new Date() > new Date(profileDoc.validUntil);
+
+  if (isExpired) {
+    const handleLogout = async () => {
+      await firebaseAuth.signOut();
+      localStorage.removeItem("lavapro_auth");
+      localStorage.removeItem("lavapro_onboarded");
+      window.location.href = "/login";
+    };
+
+    return (
+      <div className="min-h-screen bg-muted/20 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md bg-card border rounded-2xl shadow-lg p-8 text-center space-y-6">
+          <div className="mx-auto w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-2">
+            <Lock className="h-8 w-8" />
+          </div>
+          
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold tracking-tight">Renove seu plano</h1>
+            <p className="text-muted-foreground">
+              Seu período de acesso ao LavaPro expirou. Para continuar gerenciando seu lava-rápido sem interrupções, entre em contato para renovar sua assinatura.
+            </p>
+          </div>
+
+          <div className="pt-4 space-y-3">
+            <Button 
+              className="w-full h-12 text-base font-semibold"
+              onClick={() => window.open(`https://wa.me/5531983919015?text=Olá! Gostaria de renovar a assinatura do meu Lava-Rápido no LavaPro.`, '_blank')}
+            >
+              Falar no WhatsApp
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full text-muted-foreground gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              Sair da Conta
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const links = [

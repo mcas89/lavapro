@@ -93,10 +93,15 @@ export default function OnboardingPage() {
     else if (step === 2) setStep(3);
     else {
       // Finalizar Onboarding
+      // Calcula data de validade para 7 dias no futuro (período de testes)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 7);
+      
       await db.setDoc("settings", "profile", {
         theme,
         company: formData,
-        logo: logoPreview || null
+        logo: logoPreview || null,
+        validUntil: expirationDate.toISOString()
       });
       localStorage.setItem("lavapro_onboarded", "true");
       document.documentElement.className = `theme-${theme}`;
