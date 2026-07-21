@@ -58,9 +58,19 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
     if (isNaN(payDay)) return;
 
     // Data de pagamento
-    const payDateObj = new Date(currentYear, currentMonth, payDay);
-    if (payDateObj.getTime() < now.getTime() && payDay < now.getDate()) {
-      payDateObj.setMonth(currentMonth + 1);
+    let payDateObj = new Date();
+    payDateObj.setHours(0,0,0,0);
+    
+    if (member.salaryType === "Semanal") {
+      let currentDayOfWeek = payDateObj.getDay();
+      let diffDays = payDay - currentDayOfWeek;
+      if (diffDays < 0) diffDays += 7;
+      payDateObj.setDate(payDateObj.getDate() + diffDays);
+    } else {
+      payDateObj = new Date(currentYear, currentMonth, payDay);
+      if (payDateObj.getTime() < now.getTime() && payDay < now.getDate()) {
+        payDateObj.setMonth(currentMonth + 1);
+      }
     }
     
     // Se o pagamento for para o próximo mês e ainda faltam mais de 15 dias, não mostrar ainda
@@ -70,11 +80,16 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
     const payDateStr = payDateObj.toISOString().split("T")[0];
     
     if (member.lastPaymentDate) {
-       const lastPayMonth = new Date(member.lastPaymentDate + "T12:00:00").getMonth();
-       const lastPayYear = new Date(member.lastPaymentDate + "T12:00:00").getFullYear();
-       if (lastPayMonth === payDateObj.getMonth() && lastPayYear === payDateObj.getFullYear()) {
-         return; // Já pago neste período
-       }
+      if (member.salaryType === "Semanal") {
+        const diffSinceLastPay = Math.floor((now.getTime() - new Date(member.lastPaymentDate + "T12:00:00").getTime()) / (1000 * 60 * 60 * 24));
+        if (diffSinceLastPay < 5) return;
+      } else {
+        const lastPayMonth = new Date(member.lastPaymentDate + "T12:00:00").getMonth();
+        const lastPayYear = new Date(member.lastPaymentDate + "T12:00:00").getFullYear();
+        if (lastPayMonth === payDateObj.getMonth() && lastPayYear === payDateObj.getFullYear()) {
+          return; // Já pago neste período
+        }
+      }
     }
 
     teamExpenses.push({

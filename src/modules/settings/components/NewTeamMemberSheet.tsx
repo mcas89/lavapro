@@ -133,33 +133,6 @@ export function NewTeamMemberSheet() {
           </div>
 
           <div className="space-y-3 pt-2 border-t">
-            <label className="text-sm font-semibold">Datas Importantes</label>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground">Data de Início</label>
-                <Input 
-                  type="date"
-                  className="h-10 bg-muted/50"
-                  value={formData.startDate || ""}
-                  onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground">Dia do Pagamento</label>
-                <Input 
-                  type="number"
-                  min="1"
-                  max="31"
-                  placeholder="Ex: 5" 
-                  className="h-10 bg-muted/50"
-                  value={formData.paymentDate || ""}
-                  onChange={(e) => setFormData({...formData, paymentDate: e.target.value})}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3 pt-2 border-t">
             <label className="text-sm font-semibold">Remuneração Base</label>
             <div className="grid grid-cols-3 gap-2">
               {["Mensal", "Quinzenal", "Semanal"].map((type) => (
@@ -179,14 +152,60 @@ export function NewTeamMemberSheet() {
             </div>
             
             <div className="relative mt-2">
-              <span className="absolute left-3 top-2.5 text-muted-foreground font-medium text-sm">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">R$</span>
               <Input 
                 type="number"
-                placeholder="0.00" 
-                className="pl-9 h-10 bg-muted/50 font-medium"
-                value={formData.salaryAmount}
+                placeholder="Valor (Ex: 2500)" 
+                className="h-12 pl-10 font-bold bg-muted/50"
+                value={formData.salaryAmount || ""}
                 onChange={(e) => setFormData({...formData, salaryAmount: e.target.value})}
               />
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2 border-t">
+            <label className="text-sm font-semibold">Datas Importantes</label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground">Data de Início</label>
+                <Input 
+                  type="date"
+                  className="h-10 bg-muted/50"
+                  value={formData.startDate || ""}
+                  onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  {formData.salaryType === 'Semanal' ? 'Dia da Semana' : 'Dia do Pagamento'}
+                </label>
+                {formData.salaryType === 'Semanal' ? (
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={formData.paymentDate || "1"}
+                    onChange={(e) => setFormData({...formData, paymentDate: e.target.value})}
+                  >
+                    <option value="" disabled>Selecione...</option>
+                    <option value="1">Segunda-feira</option>
+                    <option value="2">Terça-feira</option>
+                    <option value="3">Quarta-feira</option>
+                    <option value="4">Quinta-feira</option>
+                    <option value="5">Sexta-feira</option>
+                    <option value="6">Sábado</option>
+                    <option value="0">Domingo</option>
+                  </select>
+                ) : (
+                  <Input 
+                    type="number"
+                    min="1"
+                    max="31"
+                    placeholder="Ex: 5" 
+                    className="h-10 bg-muted/50"
+                    value={formData.paymentDate || ""}
+                    onChange={(e) => setFormData({...formData, paymentDate: e.target.value})}
+                  />
+                )}
+              </div>
             </div>
             <p className="text-[10px] text-muted-foreground">
               Para registrar o pagamento na data certa, vá ao módulo Financeiro e lance a despesa.

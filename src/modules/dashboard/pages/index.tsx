@@ -142,22 +142,46 @@ export default function DashboardPage() {
     // 4. Pagamento de Funcionários (próximos 3 dias)
     const upcomingPayments = team.filter((member: any) => {
       if (!member.paymentDate || !member.salaryAmount) return false;
-      const payDay = parseInt(member.paymentDate);
-      if (isNaN(payDay)) return false;
+      const payDayOrWeekDay = parseInt(member.paymentDate);
+      if (isNaN(payDayOrWeekDay)) return false;
       
       const currentDay = now.getDate();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
       
-      // Criar a data do pagamento deste mês
-      const payDate = new Date(currentYear, currentMonth, payDay);
-      // Se já passou, verificar o próximo mês
-      if (payDate.getTime() < now.getTime() && payDay < currentDay) {
-        payDate.setMonth(currentMonth + 1);
+      let payDate = new Date(now);
+      payDate.setHours(0,0,0,0);
+      
+      if (member.salaryType === "Semanal") {
+        let currentDayOfWeek = payDate.getDay();
+        let diffDays = payDayOrWeekDay - currentDayOfWeek;
+        if (diffDays < 0) diffDays += 7;
+        payDate.setDate(payDate.getDate() + diffDays);
+      } else {
+        payDate = new Date(currentYear, currentMonth, payDayOrWeekDay);
+        if (payDate.getTime() < now.getTime() && payDayOrWeekDay < currentDay) {
+          payDate.setMonth(currentMonth + 1);
+        }
       }
       
       const diffDays = Math.ceil((payDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      return diffDays >= 0 && diffDays <= 3;
+      if (diffDays < 0 || diffDays > 3) return false;
+      
+      // Checar se já pagou esse ciclo
+      if (member.lastPaymentDate) {
+        if (member.salaryType === "Semanal") {
+          // Se o último pagamento foi em menos de 5 dias, provavelmente já está pago
+          const diffSinceLastPay = Math.floor((now.getTime() - new Date(member.lastPaymentDate + "T12:00:00").getTime()) / (1000 * 60 * 60 * 24));
+          if (diffSinceLastPay < 5) return false;
+        } else {
+          const lastPayMonth = new Date(member.lastPaymentDate + "T12:00:00").getMonth();
+          const lastPayYear = new Date(member.lastPaymentDate + "T12:00:00").getFullYear();
+          if (lastPayMonth === payDate.getMonth() && lastPayYear === payDate.getFullYear()) {
+            return false;
+          }
+        }
+      }
+      return true;
     });
 
     if (upcomingPayments.length > 0) {

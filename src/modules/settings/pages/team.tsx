@@ -67,7 +67,9 @@ export default function TeamPage() {
                           )}
                           {member.paymentDate && (
                             <div className="flex items-center gap-1 text-[10px] font-semibold text-blue-600 bg-blue-500/10 w-fit px-2 py-0.5 rounded-full">
-                              Pagamento: Dia {member.paymentDate}
+                              Pagamento: {member.salaryType === 'Semanal' 
+                                ? ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][parseInt(member.paymentDate)] || `Dia ${member.paymentDate}`
+                                : `Dia ${member.paymentDate}`}
                             </div>
                           )}
                           {member.startDate && (
