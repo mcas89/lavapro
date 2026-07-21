@@ -16,46 +16,33 @@ export function getNextPayDate(member: any, now: Date = new Date()): Date | null
     }
     payDate.setDate(payDate.getDate() + diffDaysToPast);
 
-    let isPaid = false;
     if (member.lastPaymentDate) {
       const lastPayTime = new Date(member.lastPaymentDate + "T12:00:00").getTime();
-      if (lastPayTime >= payDate.getTime()) {
-        isPaid = true;
+      while (payDate.getTime() <= lastPayTime) {
+        payDate.setDate(payDate.getDate() + 7);
       }
-    }
-
-    if (isPaid) {
-      payDate.setDate(payDate.getDate() + 7);
     }
   } else {
     // Mensal ou Quinzenal
     payDate = new Date(currentYear, currentMonth, payDayValue);
     
+    // Se o pagamento deste mês ainda não chegou, avalia se o mês passado está pendente
     if (payDate.getTime() > now.getTime()) {
       const lastMonthPayDate = new Date(currentYear, currentMonth - 1, payDayValue);
-      let isLastMonthPaid = false;
-      if (member.lastPaymentDate) {
-        const lastPayTime = new Date(member.lastPaymentDate + "T12:00:00").getTime();
-        if (lastPayTime >= lastMonthPayDate.getTime()) {
-          isLastMonthPaid = true;
-        }
-      }
-      if (!isLastMonthPaid && member.startDate) {
+      if (member.startDate) {
         const startDateTime = new Date(member.startDate + "T12:00:00").getTime();
+        // Só considera o mês passado se ele já estava trabalhando na data
         if (startDateTime <= lastMonthPayDate.getTime()) {
            payDate = lastMonthPayDate;
         }
       }
-    } else {
-      let isThisMonthPaid = false;
-      if (member.lastPaymentDate) {
-        const lastPayTime = new Date(member.lastPaymentDate + "T12:00:00").getTime();
-        if (lastPayTime >= payDate.getTime()) {
-          isThisMonthPaid = true;
-        }
-      }
-      if (isThisMonthPaid) {
-        payDate.setMonth(currentMonth + 1);
+    }
+
+    // Avança o mês enquanto a data for menor ou igual ao último pagamento
+    if (member.lastPaymentDate) {
+      const lastPayTime = new Date(member.lastPaymentDate + "T12:00:00").getTime();
+      while (payDate.getTime() <= lastPayTime) {
+        payDate.setMonth(payDate.getMonth() + 1);
       }
     }
   }
