@@ -37,16 +37,17 @@ export function SettingsDrawer() {
         </SheetHeader>
 
         <div className="flex-1 py-4 overflow-y-auto space-y-6">
-          <button
-            onClick={() => handleNavigate("/app/configuracoes")}
-            className="w-full flex items-center gap-3 px-4 py-4 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-left shadow-sm"
-          >
-            <Store className="h-6 w-6" />
-            Meu Lava-Rápido
-          </button>
-
           <div className="space-y-1">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">Navegação Rápida</h3>
+            
+            <button
+              onClick={() => handleNavigate("/app/configuracoes")}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+            >
+              <Store className="h-4 w-4" />
+              Meu Lava-Rápido
+            </button>
+
             {links.map((link) => {
               const Icon = link.icon;
               return (
