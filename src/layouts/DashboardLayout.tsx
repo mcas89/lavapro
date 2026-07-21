@@ -4,6 +4,7 @@ import { NavLink } from "react-router";
 import { Home, Calendar, Users, DollarSign, Menu as MenuIcon, CarFront, Lock, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { firebaseAuth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 import { cn } from "@/lib/utils";
 import { NewScheduleSheet } from "@/modules/schedule/components/NewScheduleSheet";
 import { SettingsDrawer } from "@/components/layout/SettingsDrawer";
@@ -15,10 +16,24 @@ import { NewTeamMemberSheet } from "@/modules/settings/components/NewTeamMemberS
 import { NewTransactionSheet } from "@/modules/finance/components/NewTransactionSheet";
 import { useEffect, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
+import { useNavigate } from "react-router";
 
 export function DashboardLayout() {
+  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("LavaPro");
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(firebaseAuth);
+      localStorage.removeItem('lavapro_onboarded');
+      localStorage.removeItem('lavapro_auth');
+      localStorage.removeItem('lavapro_company');
+      navigate("/login");
+    } catch (e) {
+      console.error(e);
+    }
+  };
   
   useEffect(() => {
     const savedCompany = localStorage.getItem("lavapro_company");
@@ -121,6 +136,42 @@ export function DashboardLayout() {
     { to: "/app/clientes", icon: Users, label: "Clientes" },
     { to: "?settingsMenu=true", icon: MenuIcon, label: "Menu" },
   ];
+
+  let isBlocked = false;
+  if (profileDoc && profileDoc.validUntil) {
+    const validUntilDate = new Date(profileDoc.validUntil + "T00:00:00");
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const diffDays = Math.round((today.getTime() - validUntilDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Bloqueia se o vencimento já passou de 3 dias (prazo de tolerância)
+    if (diffDays > 3) {
+      isBlocked = true;
+    }
+  }
+
+  if (isBlocked) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <Lock className="h-16 w-16 text-red-500 mb-6" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Assinatura Suspensa</h1>
+        <p className="text-muted-foreground max-w-md mb-8">
+          O prazo da sua assinatura e os 3 dias de tolerância expiraram. O sistema foi bloqueado para novos acessos. Por favor, entre em contato com o suporte para regularizar.
+        </p>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <Button 
+            className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
+            onClick={() => window.open("https://wa.me/5511999999999?text=Ol%C3%A1%2C%20gostaria%20de%20regularizar%20minha%20assinatura%20do%20LavaPro.", "_blank")}
+          >
+            Chamar Suporte no WhatsApp
+          </Button>
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
+            Sair da Conta
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/20 text-foreground flex flex-col md:flex-row pb-16 md:pb-0">
