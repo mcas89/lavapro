@@ -36,6 +36,10 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ]
+      },
+      workbox: {
+        navigateFallback: '/index.html',
+        cleanupOutdatedCaches: true,
       }
     })
   ],
