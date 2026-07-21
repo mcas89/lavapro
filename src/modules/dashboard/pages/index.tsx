@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const { data: vehicles } = useCollection<any>("vehicles");
   const { data: workOrders } = useCollection<any>("workOrders");
   const { data: settingsList, loading: settingsLoading } = useCollection<any>("settings");
+  const { data: team } = useCollection<any>("team");
 
   // Nome do dono/gestor (dinâmico) e logo
   const [ownerName, setOwnerName] = useState("Gestor");
@@ -138,8 +139,37 @@ export default function DashboardPage() {
       }
     }
 
+    // 4. Pagamento de Funcionários (próximos 3 dias)
+    const upcomingPayments = team.filter((member: any) => {
+      if (!member.paymentDate || !member.salaryAmount) return false;
+      const payDay = parseInt(member.paymentDate);
+      if (isNaN(payDay)) return false;
+      
+      const currentDay = now.getDate();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      // Criar a data do pagamento deste mês
+      const payDate = new Date(currentYear, currentMonth, payDay);
+      // Se já passou, verificar o próximo mês
+      if (payDate.getTime() < now.getTime() && payDay < currentDay) {
+        payDate.setMonth(currentMonth + 1);
+      }
+      
+      const diffDays = Math.ceil((payDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 3;
+    });
+
+    if (upcomingPayments.length > 0) {
+      newNotifications.push({
+        id: 'n4',
+        title: 'Folha de Pagamento',
+        message: `Pagamento de ${upcomingPayments.map((m: any) => m.name.split(' ')[0]).join(', ')} se aproxima (próximos 3 dias).`,
+      });
+    }
+
     setNotifications(newNotifications);
-  }, [transactions, schedules, vehicles, settingsList]);
+  }, [transactions, schedules, vehicles, settingsList, team]);
 
   const openNewSchedule = () => {
     searchParams.set("newSchedule", "true");
