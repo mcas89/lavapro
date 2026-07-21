@@ -19,21 +19,52 @@ export function TopBar({ title, showBack = false, backTo, action }: TopBarProps)
   
   let isWarningDay = false;
   let remainingDays = 0;
+  let warningType = ""; // "pre" ou "post"
+  let isTrial = false;
+  
   if (profileDoc && profileDoc.validUntil) {
     const validUntilDate = new Date(profileDoc.validUntil + "T00:00:00");
     const today = new Date();
     today.setHours(0,0,0,0);
     const diffDays = Math.round((today.getTime() - validUntilDate.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 2 || diffDays === 3) {
+    isTrial = !profileDoc.paymentHistory || profileDoc.paymentHistory.length === 0;
+
+    // Alertas antes do vencimento (Dia 6, Dia 7)
+    if (diffDays === -2 || diffDays === -1 || diffDays === 0) {
       isWarningDay = true;
-      remainingDays = 3 - diffDays; // se diffDays for 2, falta 1. se for 3, falta 0 (último dia).
+      warningType = "pre";
+      remainingDays = Math.abs(diffDays); // 2, 1, ou 0 (hoje)
+    }
+    // Alertas pós vencimento (Prazo de tolerância) apenas para Mensais
+    else if (!isTrial && diffDays > 0 && diffDays <= 3) {
+      isWarningDay = true;
+      warningType = "post";
+      remainingDays = 3 - diffDays; // Falta X dias pro bloqueio total
     }
   }
 
   if (isWarningDay) {
+    const isPost = warningType === "post";
+    const bgClass = isPost || remainingDays === 0 ? "bg-red-600" : "bg-amber-500";
+    
+    let title = "";
+    let subtitle = "";
+    
+    if (warningType === "pre") {
+      title = isTrial ? "Fim do Período de Teste" : "Atenção à Assinatura";
+      if (remainingDays === 0) {
+        subtitle = isTrial ? "Seu período de teste termina hoje!" : "Seu período ativo termina hoje!";
+      } else {
+        subtitle = isTrial ? `Seu período de teste termina em ${remainingDays} dia${remainingDays === 1 ? '' : 's'}.` : `Seu período ativo termina em ${remainingDays} dia${remainingDays === 1 ? '' : 's'}.`;
+      }
+    } else {
+      title = "Assinatura Vencida";
+      subtitle = remainingDays === 0 ? "Último dia antes do bloqueio" : `Bloqueio em ${remainingDays} dia${remainingDays === 1 ? '' : 's'}`;
+    }
+
     return (
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 bg-red-600 text-white">
+      <header className={`sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 text-white shadow-sm ${bgClass}`}>
         <div className="flex items-center gap-2">
           {showBack && (
             <Button 
@@ -46,10 +77,8 @@ export function TopBar({ title, showBack = false, backTo, action }: TopBarProps)
             </Button>
           )}
           <div className="flex flex-col">
-            <h1 className="text-sm font-bold uppercase tracking-wide">Assinatura Vencida</h1>
-            <span className="text-[10px] font-medium opacity-90">
-              {remainingDays === 0 ? "Último dia antes do bloqueio" : `Bloqueio em ${remainingDays} dia${remainingDays === 1 ? '' : 's'}`}
-            </span>
+            <h1 className="text-sm font-bold uppercase tracking-wide">{title}</h1>
+            <span className="text-[10px] font-medium opacity-90">{subtitle}</span>
           </div>
         </div>
         {action && <div>{action}</div>}

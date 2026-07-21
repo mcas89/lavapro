@@ -144,9 +144,19 @@ export function DashboardLayout() {
     today.setHours(0,0,0,0);
     const diffDays = Math.round((today.getTime() - validUntilDate.getTime()) / (1000 * 60 * 60 * 24));
     
-    // Bloqueia se o vencimento já passou de 3 dias (prazo de tolerância)
-    if (diffDays > 3) {
-      isBlocked = true;
+    // Verifica se é período de teste (nunca fez pagamento) ou cliente pagante
+    const isTrial = !profileDoc.paymentHistory || profileDoc.paymentHistory.length === 0;
+
+    if (isTrial) {
+      // Teste: Bloqueia imediatamente após o vencimento (Dia 8)
+      if (diffDays > 0) {
+        isBlocked = true;
+      }
+    } else {
+      // Mensal: Bloqueia se o vencimento já passou de 3 dias (prazo de tolerância)
+      if (diffDays > 3) {
+        isBlocked = true;
+      }
     }
   }
 
