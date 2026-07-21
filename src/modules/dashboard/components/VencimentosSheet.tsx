@@ -15,6 +15,7 @@ import {
   CalendarClock,
   Receipt
 } from "lucide-react";
+import { getNextPayDate } from "@/utils/payroll";
 
 interface VencimentosSheetProps {
   isOpen: boolean;
@@ -49,48 +50,16 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
 
   const teamExpenses: any[] = [];
   const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
 
   team.forEach((member: any) => {
-    if (!member.paymentDate || !member.salaryAmount) return;
-    const payDay = parseInt(member.paymentDate);
-    if (isNaN(payDay)) return;
-
-    // Data de pagamento
-    let payDateObj = new Date();
-    payDateObj.setHours(0,0,0,0);
-    
-    if (member.salaryType === "Semanal") {
-      let currentDayOfWeek = payDateObj.getDay();
-      let diffDays = payDay - currentDayOfWeek;
-      if (diffDays < 0) diffDays += 7;
-      payDateObj.setDate(payDateObj.getDate() + diffDays);
-    } else {
-      payDateObj = new Date(currentYear, currentMonth, payDay);
-      if (payDateObj.getTime() < now.getTime() && payDay < now.getDate()) {
-        payDateObj.setMonth(currentMonth + 1);
-      }
-    }
+    const payDateObj = getNextPayDate(member, now);
+    if (!payDateObj) return;
     
     // Se o pagamento for para o próximo mês e ainda faltam mais de 15 dias, não mostrar ainda
     const diffDays = Math.floor((payDateObj.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays > 15) return;
     
     const payDateStr = payDateObj.toISOString().split("T")[0];
-    
-    if (member.lastPaymentDate) {
-      if (member.salaryType === "Semanal") {
-        const diffSinceLastPay = Math.floor((now.getTime() - new Date(member.lastPaymentDate + "T12:00:00").getTime()) / (1000 * 60 * 60 * 24));
-        if (diffSinceLastPay < 5) return;
-      } else {
-        const lastPayMonth = new Date(member.lastPaymentDate + "T12:00:00").getMonth();
-        const lastPayYear = new Date(member.lastPaymentDate + "T12:00:00").getFullYear();
-        if (lastPayMonth === payDateObj.getMonth() && lastPayYear === payDateObj.getFullYear()) {
-          return; // Já pago neste período
-        }
-      }
-    }
 
     teamExpenses.push({
       id: `team-${member.id}`,
