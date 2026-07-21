@@ -40,11 +40,58 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
   const [, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState<FilterType>("todos");
   const { data: transactions } = useCollection<any>("transactions");
+  const { data: team } = useCollection<any>("team");
 
   // Apenas despesas não pagas com data definida
-  const expenses = transactions.filter((t: any) => 
+  const baseExpenses = transactions.filter((t: any) => 
     t.type === "expense" && t.date && !t.isPaid
   );
+
+  const teamExpenses: any[] = [];
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  team.forEach((member: any) => {
+    if (!member.paymentDate || !member.salaryAmount) return;
+    const payDay = parseInt(member.paymentDate);
+    if (isNaN(payDay)) return;
+
+    // Data de pagamento
+    const payDateObj = new Date(currentYear, currentMonth, payDay);
+    if (payDateObj.getTime() < now.getTime() && payDay < now.getDate()) {
+      payDateObj.setMonth(currentMonth + 1);
+    }
+    
+    // Se o pagamento for para o próximo mês e ainda faltam mais de 15 dias, não mostrar ainda
+    const diffDays = Math.floor((payDateObj.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays > 15) return;
+    
+    const payDateStr = payDateObj.toISOString().split("T")[0];
+    
+    if (member.lastPaymentDate) {
+       const lastPayMonth = new Date(member.lastPaymentDate + "T12:00:00").getMonth();
+       const lastPayYear = new Date(member.lastPaymentDate + "T12:00:00").getFullYear();
+       if (lastPayMonth === payDateObj.getMonth() && lastPayYear === payDateObj.getFullYear()) {
+         return; // Já pago neste período
+       }
+    }
+
+    teamExpenses.push({
+      id: `team-${member.id}`,
+      description: `Salário: ${member.name.split(' ')[0]}`,
+      category: "Folha de Pagamento",
+      value: member.salaryAmount,
+      date: payDateStr,
+      isPaid: false,
+      type: "expense",
+      isTeamPayment: true,
+      teamMemberId: member.id,
+      teamMemberName: member.name
+    });
+  });
+
+  const expenses = [...baseExpenses, ...teamExpenses];
 
   const filtered = expenses.filter((t: any) => {
     const days = getDaysDiff(t.date);
@@ -59,10 +106,24 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
     return d >= 0 && d <= 7;
   }).length;
 
-  const handleMarkPaid = async (id: string) => {
+  const handleMarkPaid = async (t: any) => {
     try {
-      await db.updateDoc("transactions", id, { isPaid: true });
-      toast({ title: "Marcado como pago! ✅", description: "Despesa quitada com sucesso." });
+      if (t.isTeamPayment) {
+        await db.addDoc("transactions", {
+          description: t.description,
+          category: t.category,
+          value: t.value,
+          date: t.date,
+          type: "expense",
+          isPaid: true,
+          teamMemberId: t.teamMemberId
+        });
+        await db.updateDoc("team", t.teamMemberId, { lastPaymentDate: t.date });
+        toast({ title: "Pagamento realizado! ✅", description: "Salário registrado nas despesas." });
+      } else {
+        await db.updateDoc("transactions", t.id, { isPaid: true });
+        toast({ title: "Marcado como pago! ✅", description: "Despesa quitada com sucesso." });
+      }
     } catch {
       toast({ title: "Erro", description: "Não foi possível atualizar.", variant: "destructive" });
     }
@@ -207,28 +268,32 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
                   <div className="flex items-center gap-2 pt-1 border-t border-border/50">
                     <Button
                       size="sm"
-                      onClick={() => handleMarkPaid(t.id)}
+                      onClick={() => handleMarkPaid(t)}
                       className="h-8 gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white flex-1 text-xs"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Marcar como Pago
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="h-8 w-8 shrink-0"
-                      onClick={() => handleEdit(t.id)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="h-8 w-8 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
-                      onClick={() => handleDelete(t.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    {!t.isTeamPayment && (
+                      <>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8 shrink-0"
+                          onClick={() => handleEdit(t.id)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
+                          onClick={() => handleDelete(t.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               );
