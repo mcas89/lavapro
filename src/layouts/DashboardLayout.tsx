@@ -161,7 +161,7 @@ export function DashboardLayout() {
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <Button 
             className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
-            onClick={() => window.open("https://wa.me/5511999999999?text=Ol%C3%A1%2C%20gostaria%20de%20regularizar%20minha%20assinatura%20do%20LavaPro.", "_blank")}
+            onClick={() => window.open("https://wa.me/5531983919015?text=Ol%C3%A1%2C%20gostaria%20de%20regularizar%20minha%20assinatura%20do%20LavaPro.", "_blank")}
           >
             Chamar Suporte no WhatsApp
           </Button>

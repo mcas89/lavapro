@@ -64,10 +64,6 @@ export default function CompanyDataPage() {
     }
   };
 
-  const handleRenew = () => {
-    window.open(`https://wa.me/5531983919015?text=Olá! Gostaria de renovar a assinatura do meu Lava-Rápido no LavaPro.`, '_blank');
-  };
-
   return (
     <div className="pb-24">
       <TopBar title="Dados da Empresa" showBack backTo="/app/configuracoes" />
@@ -113,10 +109,10 @@ export default function CompanyDataPage() {
 
             <Button 
               variant="secondary" 
-              className="w-full font-bold text-blue-700 hover:text-blue-800 bg-white hover:bg-blue-50"
-              onClick={handleRenew}
+              className="w-full font-bold text-blue-700 hover:text-blue-800 bg-white hover:bg-blue-50 flex items-center justify-center gap-2"
+              onClick={() => window.open("https://wa.me/5531983919015?text=Ol%C3%A1%2C%20gostaria%20de%20renovar%20minha%20assinatura%20do%20LavaPro.", "_blank")}
             >
-              Renovar Assinatura
+              Renovar via WhatsApp
             </Button>
           </CardContent>
         </Card>

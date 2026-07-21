@@ -107,6 +107,16 @@ export function SettingsDrawer() {
                   <span className="font-semibold text-foreground">Ideias</span>
                   <span>Felipe Ramos</span>
                 </div>
+                
+                <div className="pt-4 border-t mt-4">
+                  <span className="font-semibold text-foreground block mb-3 text-center">Precisa de Ajuda?</span>
+                  <button 
+                    onClick={() => window.open("https://wa.me/5531983919015?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20aplicativo%20LavaPro.", "_blank")}
+                    className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white py-2.5 rounded-lg font-medium transition-colors"
+                  >
+                    Falar com Suporte (WhatsApp)
+                  </button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
