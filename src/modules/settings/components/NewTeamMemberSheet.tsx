@@ -11,14 +11,21 @@ import { Input } from "@/components/ui/input";
 import { db } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
+import { useCollection } from "@/hooks/useCollection";
+
 export function NewTeamMemberSheet() {
   const [searchParams, setSearchParams] = useSearchParams();
   const isOpen = searchParams.get("newMember") === "true";
+  const editId = searchParams.get("editMember");
+  const isEdit = !!editId;
+  const isSheetOpen = isOpen || isEdit;
+
   const { toast } = useToast();
+  const { data: team } = useCollection<any>("team");
 
   const [formData, setFormData] = useState<any>({
     name: "",
-    email: "",
+    phone: "",
     role: "Funcionário",
     salaryType: "Mensal",
     salaryAmount: "",
@@ -26,28 +33,43 @@ export function NewTeamMemberSheet() {
     paymentDate: ""
   });
 
-  // Limpar form quando fechar
   useEffect(() => {
-    if (!isOpen) {
-      setFormData({ 
-        name: "", 
-        email: "", 
-        role: "Funcionário", 
-        salaryType: "Mensal", 
-        salaryAmount: "",
-        startDate: "",
-        paymentDate: ""
-      });
+    if (isSheetOpen) {
+      if (isEdit && team.length > 0) {
+        const member = team.find((m: any) => m.id === editId);
+        if (member) {
+          setFormData({
+            name: member.name || "",
+            phone: member.phone || "",
+            role: member.role || "Funcionário",
+            salaryType: member.salaryType || "Mensal",
+            salaryAmount: member.salaryAmount || "",
+            startDate: member.startDate || "",
+            paymentDate: member.paymentDate || ""
+          });
+        }
+      } else if (isOpen) {
+        setFormData({ 
+          name: "", 
+          phone: "", 
+          role: "Funcionário", 
+          salaryType: "Mensal", 
+          salaryAmount: "",
+          startDate: "",
+          paymentDate: ""
+        });
+      }
     }
-  }, [isOpen]);
+  }, [isSheetOpen, isEdit, editId, team]);
 
   const handleClose = () => {
     searchParams.delete("newMember");
+    searchParams.delete("editMember");
     setSearchParams(searchParams);
   };
 
-  const handleSave = () => {
-    if (!formData.name || !formData.email) return;
+  const handleSave = async () => {
+    if (!formData.name) return;
 
     // Gerar iniciais
     const parts = formData.name.split(" ");
@@ -56,25 +78,36 @@ export function NewTeamMemberSheet() {
       initial = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
-    db.addDoc("team", {
+    const docData = {
       ...formData,
-      salaryAmount: formData.salaryAmount ? parseFloat(formData.salaryAmount.replace(",", ".")) : 0,
+      salaryAmount: formData.salaryAmount ? parseFloat(formData.salaryAmount.toString().replace(",", ".")) : 0,
       initial
-    });
+    };
 
-    toast({
-      title: "Membro adicionado",
-      description: `${formData.name} foi adicionado à equipe com sucesso.`,
-    });
+    if (isEdit) {
+      await db.updateDoc("team", editId, docData);
+      toast({
+        title: "Funcionário atualizado",
+        description: `${formData.name} foi atualizado com sucesso.`,
+      });
+    } else {
+      await db.addDoc("team", docData);
+      toast({
+        title: "Funcionário adicionado",
+        description: `${formData.name} foi adicionado à equipe com sucesso.`,
+      });
+    }
 
     handleClose();
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleClose}>
+    <Sheet open={isSheetOpen} onOpenChange={handleClose}>
       <SheetContent side="bottom" className="h-[80vh] sm:h-auto sm:max-h-[90vh] rounded-t-3xl px-4 pb-8 overflow-y-auto">
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-left text-xl font-bold">Novo Membro</SheetTitle>
+          <SheetTitle className="text-left text-xl font-bold">
+            {isEdit ? "Editar Funcionário" : "Novo Funcionário"}
+          </SheetTitle>
         </SheetHeader>
 
         <div className="space-y-5">
@@ -89,45 +122,14 @@ export function NewTeamMemberSheet() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold">E-mail</label>
+            <label className="text-sm font-semibold">Telefone</label>
             <Input 
-              type="email"
-              placeholder="email@exemplo.com" 
+              type="tel"
+              placeholder="(11) 99999-9999" 
               className="h-12 bg-muted/50"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
             />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">Nível de Acesso</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setFormData({...formData, role: "Administrador"})}
-                className={`h-12 rounded-xl border font-semibold text-sm transition-colors ${
-                  formData.role === "Administrador" 
-                    ? "bg-primary text-primary-foreground border-primary" 
-                    : "bg-transparent text-muted-foreground border-border hover:bg-muted"
-                }`}
-              >
-                Administrador
-              </button>
-              <button
-                onClick={() => setFormData({...formData, role: "Funcionário"})}
-                className={`h-12 rounded-xl border font-semibold text-sm transition-colors ${
-                  formData.role === "Funcionário" 
-                    ? "bg-primary text-primary-foreground border-primary" 
-                    : "bg-transparent text-muted-foreground border-border hover:bg-muted"
-                }`}
-              >
-                Funcionário
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formData.role === "Administrador" 
-                ? "Pode acessar relatórios financeiros e configurações."
-                : "Acesso apenas à agenda e ordens de serviço."}
-            </p>
           </div>
 
           <div className="space-y-3 pt-2 border-t">
@@ -199,9 +201,8 @@ export function NewTeamMemberSheet() {
           <Button 
             className="flex-1 h-12 rounded-xl font-bold text-base" 
             onClick={handleSave}
-            disabled={!formData.name || !formData.email}
           >
-            Adicionar
+            {isEdit ? "Salvar" : "Adicionar"}
           </Button>
         </div>
       </SheetContent>

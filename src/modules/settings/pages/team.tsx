@@ -2,9 +2,10 @@ import { useSearchParams } from "react-router";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, UserPlus, Shield, MoreVertical } from "lucide-react";
+import { Users, UserPlus, Edit, Trash2 } from "lucide-react";
 import { FloatingActionButton } from "@/components/layout/FloatingActionButton";
 import { useCollection } from "@/hooks/useCollection";
+import { db } from "@/lib/db";
 
 export default function TeamPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,7 +18,7 @@ export default function TeamPage() {
 
   return (
     <div className="pb-24">
-      <TopBar title="Equipe e Usuários" showBack backTo="/app/configuracoes" />
+      <TopBar title="Funcionários" showBack backTo="/app/configuracoes" />
 
       <div className="p-4 space-y-6">
         <div className="flex items-center gap-3 mb-2">
@@ -25,8 +26,8 @@ export default function TeamPage() {
             <Users className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-bold text-lg">Membros da Equipe</h2>
-            <p className="text-xs text-muted-foreground">Gerencie acessos ao sistema.</p>
+            <h2 className="font-bold text-lg">Lista de Funcionários</h2>
+            <p className="text-xs text-muted-foreground">Gerencie o time e pagamentos.</p>
           </div>
         </div>
 
@@ -34,7 +35,7 @@ export default function TeamPage() {
           {loading ? (
              <div className="text-center py-4 text-muted-foreground text-sm">Carregando...</div>
           ) : team.length === 0 ? (
-             <div className="text-center py-4 text-muted-foreground text-sm">Nenhum membro cadastrado.</div>
+             <div className="text-center py-4 text-muted-foreground text-sm">Nenhum funcionário cadastrado.</div>
           ) : (
             team.map((member: any) => (
               <Card key={member.id} className="border-none shadow-sm bg-card">
@@ -45,13 +46,9 @@ export default function TeamPage() {
                   <div className="flex-1">
                     <h3 className="font-bold">{member.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">{member.email}</span>
+                      <span className="text-xs text-muted-foreground">{member.phone || "Sem telefone"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-pink-600 bg-pink-500/10 w-fit px-2 py-0.5 rounded-full">
-                        <Shield className="h-3 w-3" />
-                        {member.role}
-                      </div>
                       {member.salaryAmount > 0 && (
                         <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 w-fit px-2 py-0.5 rounded-full">
                           R$ {member.salaryAmount.toFixed(2)} ({member.salaryType})
@@ -69,9 +66,22 @@ export default function TeamPage() {
                       )}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
+                  <div className="flex flex-col gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => {
+                      searchParams.set("newMember", "true");
+                      searchParams.set("editMember", member.id);
+                      setSearchParams(searchParams);
+                    }}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" onClick={async () => {
+                      if (window.confirm(`Tem certeza que deseja excluir ${member.name}?`)) {
+                        await db.deleteDoc("team", member.id);
+                      }
+                    }}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))
