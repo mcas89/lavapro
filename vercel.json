@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/infinitepay/(.*)",
+      "destination": "https://api.checkout.infinitepay.io/$1"
+    },
+    {
       "source": "/admin",
       "destination": "/admin/index.html"
     },
