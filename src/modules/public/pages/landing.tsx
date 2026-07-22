@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { Download, ChevronRight, CheckCircle2, Star, Smartphone, Shield, Zap, TrendingUp } from "lucide-react";
+import { Download, CheckCircle2, Star, Smartphone, Shield, Zap, TrendingUp } from "lucide-react";
 export default function LandingPage() {
   const navigate = useNavigate();
 
