@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import { PublicLayout } from "@/layouts/PublicLayout";
+import LandingPage from "@/modules/public/pages/landing";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 
@@ -31,7 +32,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/login" replace />,
+        element: <LandingPage />,
       },
       {
         path: "termos",
