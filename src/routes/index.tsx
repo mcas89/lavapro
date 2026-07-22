@@ -20,6 +20,7 @@ import ThemePage from "@/modules/settings/pages/theme";
 import TeamPage from "@/modules/settings/pages/team";
 import OnboardingPage from "@/modules/onboarding/pages";
 import VerifyPaymentPage from "@/modules/billing/pages/verify-payment";
+import LegalPage from "@/modules/settings/pages/legal";
 
 import LoginPage from "@/modules/auth/pages";
 
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Navigate to="/login" replace />,
+      },
+      {
+        path: "termos",
+        element: <LegalPage />,
       },
     ],
   },

@@ -1,7 +1,7 @@
 import { useSearchParams, useNavigate } from "react-router";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Store, LogOut, Info, Home, CarFront, Calendar, DollarSign, Users } from "lucide-react";
+import { Store, LogOut, Info, Home, CarFront, Calendar, DollarSign, Users, Shield } from "lucide-react";
 
 export function SettingsDrawer() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -120,6 +120,14 @@ export function SettingsDrawer() {
               </div>
             </DialogContent>
           </Dialog>
+
+          <button
+            onClick={() => handleNavigate("/termos")}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+          >
+            <Shield className="h-4 w-4" />
+            Privacidade e Termos
+          </button>
         </div>
       </SheetContent>
     </Sheet>
