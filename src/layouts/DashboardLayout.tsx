@@ -163,19 +163,21 @@ export function DashboardLayout() {
   if (isBlocked) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <Lock className="h-16 w-16 text-red-500 mb-6" />
-        <h1 className="text-2xl font-bold text-foreground mb-2">Assinatura Suspensa</h1>
-        <p className="text-muted-foreground max-w-md mb-8">
-          O prazo da sua assinatura e os 3 dias de tolerância expiraram. O sistema foi bloqueado para novos acessos. Por favor, entre em contato com o suporte para regularizar.
+        <div className="h-20 w-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
+          <Lock className="h-10 w-10 text-red-500" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Acesso Suspenso</h1>
+        <p className="text-muted-foreground max-w-sm mb-8 text-sm leading-relaxed">
+          Seu período de acesso expirou. Escolha um plano abaixo para reativar o sistema agora mesmo, sem precisar falar com ninguém.
         </p>
         <div className="flex flex-col gap-3 w-full max-w-xs">
-          <Button 
-            className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
-            onClick={() => window.open("https://wa.me/5531983919015?text=Ol%C3%A1%2C%20gostaria%20de%20regularizar%20minha%20assinatura%20do%20LavaPro.", "_blank")}
+          <Button
+            className="w-full h-14 text-base font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+            onClick={() => navigate("/app/configuracoes/empresa")}
           >
-            Chamar Suporte no WhatsApp
+            Ver Planos e Renovar Agora
           </Button>
-          <Button variant="outline" className="w-full" onClick={handleLogout}>
+          <Button variant="ghost" className="w-full text-muted-foreground" onClick={handleLogout}>
             Sair da Conta
           </Button>
         </div>

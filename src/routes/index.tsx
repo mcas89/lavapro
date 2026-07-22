@@ -19,6 +19,7 @@ import CompanyDataPage from "@/modules/settings/pages/company-data";
 import ThemePage from "@/modules/settings/pages/theme";
 import TeamPage from "@/modules/settings/pages/team";
 import OnboardingPage from "@/modules/onboarding/pages";
+import VerifyPaymentPage from "@/modules/billing/pages/verify-payment";
 
 import LoginPage from "@/modules/auth/pages";
 
@@ -112,6 +113,10 @@ export const router = createBrowserRouter([
       {
         path: "configuracoes/equipe",
         element: <TeamPage />,
+      },
+      {
+        path: "verificar-pagamento",
+        element: <VerifyPaymentPage />,
       },
     ],
   },
