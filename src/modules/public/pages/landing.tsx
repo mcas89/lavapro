@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { Download, CheckCircle2, Star, Smartphone, Shield, Zap, TrendingUp } from "lucide-react";
+import { Download, CheckCircle2, Star, Shield, Zap, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
