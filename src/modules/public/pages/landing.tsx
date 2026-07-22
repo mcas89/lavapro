@@ -48,8 +48,8 @@ export default function LandingPage() {
 
       {/* HEADER */}
       <header className="container mx-auto px-6 py-6 flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-3">
-          <img src="/lavapro.png" alt="LavaPro Logo" className="h-8 md:h-10 w-auto object-contain" />
+        <div className="bg-white px-4 py-2 rounded-2xl flex items-center justify-center shadow-lg shadow-white/5">
+          <img src="/lavapro.png" alt="LavaPro Logo" className="h-10 md:h-14 w-auto object-contain" />
         </div>
         <button 
           onClick={handleDownload}
