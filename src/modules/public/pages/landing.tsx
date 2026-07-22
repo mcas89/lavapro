@@ -47,13 +47,13 @@ export default function LandingPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
 
       {/* HEADER */}
-      <header className="container mx-auto px-6 py-6 flex items-center justify-between relative z-10">
-        <div className="bg-white px-4 py-2 rounded-2xl flex items-center justify-center shadow-lg shadow-white/5">
-          <img src="/lavapro.png" alt="LavaPro Logo" className="h-10 md:h-14 w-auto object-contain" />
+      <header className="container mx-auto px-6 py-8 flex items-center justify-center relative z-10">
+        <div className="bg-white px-6 py-3 rounded-2xl flex items-center justify-center shadow-xl shadow-white/5">
+          <img src="/lavapro.png" alt="LavaPro Logo" className="h-14 md:h-20 w-auto object-contain" />
         </div>
         <button 
           onClick={handleDownload}
-          className="hidden md:flex items-center gap-2 text-sm font-semibold hover:text-blue-400 transition-colors"
+          className="absolute right-6 hidden md:flex items-center gap-2 text-sm font-semibold hover:text-blue-400 transition-colors"
         >
           Acessar Conta
         </button>
