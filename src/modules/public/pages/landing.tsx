@@ -16,13 +16,8 @@ export default function LandingPage() {
 
       {/* HEADER */}
       <header className="container mx-auto px-6 py-6 flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-2">
-          <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <Smartphone className="h-6 w-6 text-white" />
-          </div>
-          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-            LavaPro
-          </span>
+        <div className="flex items-center gap-3">
+          <img src="/lavapro.png" alt="LavaPro Logo" className="h-8 md:h-10 w-auto object-contain" />
         </div>
         <button 
           onClick={handleDownload}
@@ -105,15 +100,15 @@ export default function LandingPage() {
             <div className="bg-[#020817] border border-slate-800 rounded-3xl overflow-hidden hover:border-blue-500/50 transition-colors group">
               <div className="h-48 overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#020817] to-transparent z-10" />
-                <img src="/portifolio/empresa.png" alt="Empresa e Financeiro" className="w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src="/portifolio/empresa.png" alt="Configurações da Empresa" className="w-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-8">
                 <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-4">
                   <TrendingUp className="h-5 w-5 text-indigo-400" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Financeiro Descomplicado</h3>
+                <h3 className="text-xl font-bold mb-2">Gestão Completa</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">
-                  Fechamento de caixa automático. Acompanhe entradas, saídas, folha de pagamento e o lucro real do dia a dia.
+                  Configure seus serviços, preços e dados do seu lava-rápido de forma simples. O sistema se adapta ao seu jeito de trabalhar.
                 </p>
               </div>
             </div>
@@ -128,9 +123,9 @@ export default function LandingPage() {
                 <div className="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4">
                   <Shield className="h-5 w-5 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Gestão de Equipe</h3>
+                <h3 className="text-xl font-bold mb-2">Na Palma da Mão</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">
-                  Calcule comissões automaticamente. Saiba exatamente quanto pagar para cada funcionário sem fazer contas no papel.
+                  Navegação rápida e fluida. Acesse financeiro, equipe, clientes e histórico de lavagens com apenas um toque, de qualquer lugar.
                 </p>
               </div>
             </div>
