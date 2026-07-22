@@ -1,10 +1,42 @@
 import { useNavigate } from "react-router";
 import { Download, CheckCircle2, Star, Smartphone, Shield, Zap, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-  const handleDownload = () => {
-    navigate("/login");
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleDownload = async () => {
+    if (deferredPrompt) {
+      // Dispara o pop-up nativo de instalação do Chrome/Android
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+        toast({
+          title: "Instalando...",
+          description: "O LavaPro está sendo adicionado à sua tela inicial."
+        });
+      }
+    } else {
+      // Se não for possível instalar nativamente (ex: Safari no iPhone ou já instalado)
+      // Manda para o fluxo normal de criar conta / login.
+      navigate("/login");
+    }
   };
 
   return (
