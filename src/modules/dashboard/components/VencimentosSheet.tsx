@@ -75,7 +75,10 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
     });
   });
 
-  const expenses = [...baseExpenses, ...teamExpenses];
+  const expenses = [...baseExpenses, ...teamExpenses].filter((t: any) => {
+    const days = getDaysDiff(t.date);
+    return days <= 3; // Mostrar apenas itens vencidos ou que vencem em até 3 dias
+  });
 
   const filtered = expenses.filter((t: any) => {
     const days = getDaysDiff(t.date);
@@ -92,20 +95,27 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
 
   const handleMarkPaid = async (t: any) => {
     try {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const numericValue = typeof t.value === "string" ? parseFloat(t.value.replace(/\./g, "").replace(",", ".")) || 0 : Number(t.value) || 0;
+
       if (t.isTeamPayment) {
         await db.addDoc("transactions", {
           description: t.description,
           category: t.category,
-          value: t.value,
-          date: t.date,
+          value: numericValue,
+          date: todayStr, // Registrar pagamento na data de hoje
           type: "expense",
           isPaid: true,
           teamMemberId: t.teamMemberId
         });
-        await db.updateDoc("team", t.teamMemberId, { lastPaymentDate: t.date });
+        await db.updateDoc("team", t.teamMemberId, { lastPaymentDate: todayStr });
         toast({ title: "Pagamento realizado! ✅", description: "Salário registrado nas despesas." });
       } else {
-        await db.updateDoc("transactions", t.id, { isPaid: true });
+        await db.updateDoc("transactions", t.id, { 
+          isPaid: true,
+          value: numericValue, // Garante que é número
+          date: todayStr // Atualiza para data do pagamento real
+        });
         toast({ title: "Marcado como pago! ✅", description: "Despesa quitada com sucesso." });
       }
     } catch {
@@ -126,7 +136,7 @@ export function VencimentosSheet({ isOpen, onClose }: VencimentosSheetProps) {
   const handleEdit = (id: string) => {
     onClose();
     setTimeout(() => {
-      setSearchParams(p => { p.set("editTransaction", id); return p; });
+      setSearchParams((p: URLSearchParams) => { p.set("editTransaction", id); return p; });
     }, 300);
   };
 

@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { useCollection } from "@/hooks/useCollection";
 import { useToast } from "@/hooks/use-toast";
+import { parseExpiration } from "@/services/planService";
 
 const INFINITEPAY_HANDLE = "mcas-89";
 
@@ -11,7 +12,7 @@ export default function VerifyPaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { data: settingsList } = useCollection<any>("settings");
+  const { data: settingsList, loading: settingsLoading } = useCollection<any>("settings");
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("Confirmando seu pagamento com a InfinitePay...");
@@ -29,13 +30,13 @@ export default function VerifyPaymentPage() {
     }
 
     if (verified) return;
-    if (settingsList === undefined) return; // Aguarda carregar
+    if (settingsLoading) return; // Aguarda carregar
 
     setVerified(true);
 
     const verifyAndActivate = async () => {
       try {
-        const response = await fetch("https://api.checkout.infinitepay.io/payment_check", {
+        const response = await fetch("/infinitepay/payment_check", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -54,9 +55,14 @@ export default function VerifyPaymentPage() {
           return;
         }
 
-        // Determinar dias a adicionar baseado no order_nsu que nós definimos
-        const daysToAdd = order_nsu?.includes("365") ? 365 : 30;
-        const paidValue = data.paid_amount / 100;
+        let daysToAdd = 30;
+        let paidValue = data.paid_amount ? data.paid_amount / 100 : 29.90;
+
+        if (order_nsu?.includes("365dias")) {
+          daysToAdd = 365;
+        } else if (order_nsu?.includes("30dias")) {
+          daysToAdd = 30;
+        }
 
         // Calcular nova data de vencimento (acumulativa em cima do que já tem)
         const profileDoc = settingsList?.find((doc: any) => doc.id === "profile");
@@ -66,7 +72,7 @@ export default function VerifyPaymentPage() {
         baseDate.setHours(0, 0, 0, 0);
 
         if (currentValidUntil) {
-          const currentDate = new Date(currentValidUntil + "T00:00:00");
+          const currentDate = parseExpiration(currentValidUntil);
           if (currentDate > baseDate) {
             baseDate = currentDate;
           }
@@ -78,10 +84,13 @@ export default function VerifyPaymentPage() {
         const paymentRecord = {
           date: new Date().toISOString(),
           value: paidValue,
+          amount: data.amount ? data.amount / 100 : paidValue,
           type: daysToAdd === 365 ? "Plano Anual" : "Plano Mensal",
           days: daysToAdd,
           transaction_nsu,
           slug,
+          capture_method: data.capture_method || "credit_card",
+          installments: data.installments || 1,
         };
 
         if (profileDoc) {

@@ -17,18 +17,6 @@ const INFINITEPAY_HANDLE = "mcas-89";
 
 const PLANS = [
   {
-    id: "test",
-    label: "Teste",
-    price: "R$ 1,00",
-    cents: 100,
-    days: 30,
-    description: "Ambiente de teste",
-    icon: Zap,
-    color: "from-slate-600 to-slate-700",
-    highlight: false,
-    order_nsu_prefix: "30dias",
-  },
-  {
     id: "monthly",
     label: "Mensal",
     price: "R$ 29,90",
@@ -76,7 +64,12 @@ export default function CompanyDataPage() {
 
   // Status de vencimento
   const validUntilStr = profileDoc?.validUntil;
-  const validUntil = validUntilStr ? new Date(validUntilStr + "T00:00:00") : null;
+  let validUntil: Date | null = null;
+  if (validUntilStr) {
+    validUntil = validUntilStr.includes("T") 
+      ? new Date(validUntilStr) 
+      : new Date(validUntilStr + "T00:00:00");
+  }
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
@@ -139,7 +132,7 @@ export default function CompanyDataPage() {
       const order_nsu = `${plan.order_nsu_prefix}-${Date.now()}`;
       const redirect_url = `${window.location.origin}/app/verificar-pagamento`;
 
-      const response = await fetch("https://api.checkout.infinitepay.io/links", {
+      const response = await fetch("/infinitepay/links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -155,6 +148,8 @@ export default function CompanyDataPage() {
           ],
           customer: {
             name: formData.name || "Cliente LavaPro",
+            ...(profileDoc?.company?.email && { email: profileDoc.company.email }),
+            ...(formData.phone?.replace(/\D/g, '').length >= 10 && { phone_number: `+55${formData.phone.replace(/\D/g, '')}` }),
           },
         }),
       });

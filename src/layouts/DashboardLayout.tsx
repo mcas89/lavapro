@@ -1,8 +1,8 @@
-import { Outlet, Navigate } from "react-router";
-import { BottomNavigation } from "@/components/layout/BottomNavigation";
-import { NavLink } from "react-router";
-import { Home, Calendar, Users, DollarSign, Menu as MenuIcon, CarFront, Lock, LogOut } from "lucide-react";
+import { Outlet, Navigate, NavLink } from "react-router";
+import { Home, Calendar, Users, DollarSign, Menu as MenuIcon, CarFront, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isBlocked, isInGracePeriod, isExpiringSoon } from "@/services/planService";
+import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { firebaseAuth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { cn } from "@/lib/utils";
@@ -16,10 +16,11 @@ import { NewTeamMemberSheet } from "@/modules/settings/components/NewTeamMemberS
 import { NewTransactionSheet } from "@/modules/finance/components/NewTransactionSheet";
 import { useEffect, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 export function DashboardLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [companyName, setCompanyName] = useState("LavaPro");
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export function DashboardLayout() {
       console.error(e);
     }
   };
-  
+
   useEffect(() => {
     const savedCompany = localStorage.getItem("lavapro_company");
     if (savedCompany) {
@@ -46,11 +47,11 @@ export function DashboardLayout() {
   }, []);
 
   const { data: settings, loading } = useCollection<any>("settings");
-  
+
   const isOnboardedLocal = localStorage.getItem("lavapro_onboarded") === "true";
   const profileDoc = settings?.find((s: any) => s.id === "profile");
-  
-  // Se encontrou o profile no banco, significa que já fez onboarding (útil para login em novo dispositivo)
+
+  // Se encontrou o profile no banco, significa que já fez onboarding
   if (profileDoc && !isOnboardedLocal) {
     localStorage.setItem("lavapro_onboarded", "true");
   }
@@ -69,7 +70,7 @@ export function DashboardLayout() {
 
   const isReallyOnboarded = isOnboardedLocal || !!profileDoc;
 
-  // Se não está marcado como onboarded localmente, esperamos carregar o banco para ter certeza
+  // Aguarda carregar o banco antes de redirecionar
   if (!isOnboardedLocal && loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/20">
@@ -77,80 +78,22 @@ export function DashboardLayout() {
       </div>
     );
   }
-  
+
   if (!isReallyOnboarded) {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Verificação do Plano (Bloqueio SaaS)
-  const isExpired = profileDoc?.validUntil && new Date() > new Date(profileDoc.validUntil);
+  const validUntil = profileDoc?.validUntil;
+  const isUserBlocked = validUntil ? isBlocked(validUntil) : false;
+  const isGracePeriod = validUntil ? isInGracePeriod(validUntil) : false;
+  const isExpiring = validUntil ? isExpiringSoon(validUntil) : false;
 
-  if (isExpired) {
-    const handleLogout = async () => {
-      await firebaseAuth.signOut();
-      localStorage.removeItem("lavapro_auth");
-      localStorage.removeItem("lavapro_onboarded");
-      window.location.href = "/login";
-    };
+  // Permite acesso à página de empresa para que o usuário possa renovar
+  const isOnEmpresaPage = location.pathname === "/app/configuracoes/empresa";
+  const isOnVerifyPage = location.pathname === "/app/verificar-pagamento";
 
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="h-20 w-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
-          <Lock className="h-10 w-10 text-red-500" />
-        </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">Acesso Suspenso</h1>
-        <p className="text-muted-foreground max-w-sm mb-8 text-sm leading-relaxed">
-          Seu período de acesso expirou. Escolha um plano para reativar o sistema agora mesmo, sem precisar falar com ninguém.
-        </p>
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <Button
-            className="w-full h-14 text-base font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
-            onClick={() => navigate("/app/configuracoes/empresa")}
-          >
-            Ver Planos e Renovar Agora
-          </Button>
-          <Button variant="ghost" className="w-full text-muted-foreground gap-2" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" />
-            Sair da Conta
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const links = [
-    { to: "/app/dashboard", icon: Home, label: "Início" },
-    { to: "/app/pista", icon: CarFront, label: "Pista" },
-    { to: "/app/agenda", icon: Calendar, label: "Agenda" },
-    { to: "/app/financeiro", icon: DollarSign, label: "Financeiro" },
-    { to: "/app/clientes", icon: Users, label: "Clientes" },
-    { to: "?settingsMenu=true", icon: MenuIcon, label: "Menu" },
-  ];
-
-  let isBlocked = false;
-  if (profileDoc && profileDoc.validUntil) {
-    const validUntilDate = new Date(profileDoc.validUntil + "T00:00:00");
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const diffDays = Math.round((today.getTime() - validUntilDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Verifica se é período de teste (nunca fez pagamento) ou cliente pagante
-    const isTrial = !profileDoc.paymentHistory || profileDoc.paymentHistory.length === 0;
-
-    if (isTrial) {
-      // Teste: Bloqueia imediatamente após o vencimento (Dia 8)
-      if (diffDays > 0) {
-        isBlocked = true;
-      }
-    } else {
-      // Mensal: Bloqueia se o vencimento já passou de 3 dias (prazo de tolerância)
-      if (diffDays > 3) {
-        isBlocked = true;
-      }
-    }
-  }
-
-  if (isBlocked) {
+  // Bloqueio total após período de graça
+  if (isUserBlocked && !isOnEmpresaPage && !isOnVerifyPage) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <div className="h-20 w-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
@@ -175,10 +118,50 @@ export function DashboardLayout() {
     );
   }
 
+  const links = [
+    { to: "/app/dashboard", icon: Home, label: "Início" },
+    { to: "/app/pista", icon: CarFront, label: "Pista" },
+    { to: "/app/agenda", icon: Calendar, label: "Agenda" },
+    { to: "/app/financeiro", icon: DollarSign, label: "Financeiro" },
+    { to: "/app/clientes", icon: Users, label: "Clientes" },
+    { to: "?settingsMenu=true", icon: MenuIcon, label: "Menu" },
+  ];
+
   return (
     <div className="min-h-screen bg-muted/20 text-foreground flex flex-col md:flex-row pb-16 md:pb-0">
+      {/* Banner de período de graça (3 dias após vencimento) */}
+      {isGracePeriod && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-red-600 to-rose-600 text-white px-4 py-2 flex items-center justify-between gap-2 shadow-lg">
+          <p className="text-sm font-semibold">⚠️ Renove seu acesso — período de graça termina em breve</p>
+          <Button
+            size="sm"
+            className="bg-white text-red-600 hover:bg-red-50 font-bold text-xs px-3 h-7 rounded-lg flex-shrink-0"
+            onClick={() => navigate("/app/configuracoes/empresa")}
+          >
+            Renovar
+          </Button>
+        </div>
+      )}
+
+      {/* Banner de vencimento próximo */}
+      {isExpiring && !isGracePeriod && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 flex items-center justify-between gap-2 shadow-lg">
+          <p className="text-sm font-semibold">⏰ Seu plano vence em breve</p>
+          <Button
+            size="sm"
+            className="bg-white text-amber-600 hover:bg-amber-50 font-bold text-xs px-3 h-7 rounded-lg flex-shrink-0"
+            onClick={() => navigate("/app/configuracoes/empresa")}
+          >
+            Renovar
+          </Button>
+        </div>
+      )}
+
       {/* Sidebar for Desktop */}
-      <aside className="hidden md:flex w-64 flex-col border-r bg-background h-screen sticky top-0 shrink-0">
+      <aside className={cn(
+        "hidden md:flex w-64 flex-col border-r bg-background h-screen sticky top-0 shrink-0",
+        (isGracePeriod || isExpiring) ? "mt-10" : ""
+      )}>
         <div className="h-14 flex items-center px-6 border-b gap-3">
           {companyLogo ? (
             <img src={companyLogo} alt="Logo" className="h-8 w-auto max-w-[100px] object-contain" />
@@ -192,7 +175,7 @@ export function DashboardLayout() {
               <NavLink
                 key={link.to}
                 to={link.to}
-                className={({ isActive }) =>
+                className={({ isActive }: { isActive: boolean }) =>
                   cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
                     isActive && !link.to.includes("?")
@@ -210,13 +193,16 @@ export function DashboardLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 bg-background md:bg-transparent relative h-screen overflow-y-auto">
+      <main className={cn(
+        "flex-1 flex flex-col min-w-0 bg-background md:bg-transparent relative h-screen overflow-y-auto",
+        (isGracePeriod || isExpiring) ? "pt-10 md:pt-0" : ""
+      )}>
         <Outlet />
       </main>
 
       {/* Bottom Navigation for Mobile */}
       <BottomNavigation />
-      
+
       {/* Global Modals */}
       <NewScheduleSheet />
       <SettingsDrawer />

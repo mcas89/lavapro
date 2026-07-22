@@ -48,4 +48,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/infinitepay': {
+        target: 'https://api.checkout.infinitepay.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/infinitepay/, ''),
+      },
+    },
+  },
 })

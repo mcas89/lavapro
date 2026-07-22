@@ -19,7 +19,7 @@ export function BottomNavigation() {
           <NavLink
             key={link.to}
             to={link.to}
-            className={({ isActive }) =>
+            className={({ isActive }: { isActive: boolean }) =>
               cn(
                 "flex flex-col items-center justify-center w-full h-full space-y-1 text-muted-foreground transition-colors",
                 isActive && !link.to.includes("?") && "text-primary"
