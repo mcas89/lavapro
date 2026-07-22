@@ -94,35 +94,25 @@ export function DashboardLayout() {
     };
 
     return (
-      <div className="min-h-screen bg-muted/20 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md bg-card border rounded-2xl shadow-lg p-8 text-center space-y-6">
-          <div className="mx-auto w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-2">
-            <Lock className="h-8 w-8" />
-          </div>
-          
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight">Renove seu plano</h1>
-            <p className="text-muted-foreground">
-              Seu período de acesso ao LavaPro expirou. Para continuar gerenciando seu lava-rápido sem interrupções, entre em contato para renovar sua assinatura.
-            </p>
-          </div>
-
-          <div className="pt-4 space-y-3">
-            <Button 
-              className="w-full h-12 text-base font-semibold"
-              onClick={() => window.open(`https://wa.me/5531983919015?text=Olá! Gostaria de renovar a assinatura do meu Lava-Rápido no LavaPro.`, '_blank')}
-            >
-              Falar no WhatsApp
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full text-muted-foreground gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4" />
-              Sair da Conta
-            </Button>
-          </div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="h-20 w-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
+          <Lock className="h-10 w-10 text-red-500" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Acesso Suspenso</h1>
+        <p className="text-muted-foreground max-w-sm mb-8 text-sm leading-relaxed">
+          Seu período de acesso expirou. Escolha um plano para reativar o sistema agora mesmo, sem precisar falar com ninguém.
+        </p>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <Button
+            className="w-full h-14 text-base font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+            onClick={() => navigate("/app/configuracoes/empresa")}
+          >
+            Ver Planos e Renovar Agora
+          </Button>
+          <Button variant="ghost" className="w-full text-muted-foreground gap-2" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+            Sair da Conta
+          </Button>
         </div>
       </div>
     );
