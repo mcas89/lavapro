@@ -1,20 +1,7 @@
 import { useNavigate } from "react-router";
 import { Download, ChevronRight, CheckCircle2, Star, Smartphone, Shield, Zap, TrendingUp } from "lucide-react";
-import { useEffect } from "react";
-
 export default function LandingPage() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Se o usuário já instalou o PWA (roda como app nativo) ou já tem sessão,
-    // pula a página de vendas e vai direto pro login/dashboard.
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
-    const hasAuth = localStorage.getItem("lavapro_auth") === "true";
-    
-    if (isPWA || hasAuth) {
-      navigate("/login", { replace: true });
-    }
-  }, [navigate]);
 
   const handleDownload = () => {
     navigate("/login");
